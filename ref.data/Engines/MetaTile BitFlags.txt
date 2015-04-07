@@ -1,0 +1,5 @@
+Each metatile has 8 bitflags.
+	7654 3210
+	.... ...b
+	
+	b = block

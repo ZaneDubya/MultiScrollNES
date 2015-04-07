@@ -1,0 +1,51 @@
+Text Engine
+
+Notes:
+Max string length is 0xff
+
+To Start:
+	Put pointer to text string in x, y and call TextDisplay
+	
+
+TextDisplay:
+	Sets TextDisplayPtr
+	Sets Mode to TextDisplay. (Pauses action.)
+	Sets TextDisplayIndex = 0
+	exit
+
+Main Calls TextDisplayRoutine
+	Checks TextDisplayIndex
+	0:
+		Build string. Get list of characters to copy.
+		Get location where display is going to write in PPU.
+		Copy AttributeTable to localcopy.
+		Modify AttributeTable (03 -> TileMapPaletteReplacement, all attributes where PPU will be to 00)
+		Set up VRAM write
+		Set TextDisplayIndex = 1
+		Set PendingSwitch = 0
+		VBLK: Copy the first 24 text tiles.
+	1:
+		Build first half of nametable for text.
+		Set up VRAM write
+		Set Index = 2
+		VBLK: Copy the second 24 text tiles.
+	2:
+		Build second half of nametable for text.
+		Set up VRAM write
+		Set Index = 3
+		VBLK: Copy NameTable from VRAM (224 bytes)
+	3:
+		Finish nametable and attribute table writing
+		VBLK: Copy NameTable data, AttributeTable data, to VRAM
+		Set Index = 4
+	4:
+		Prepare to restore nametable and attributetable to vram. when ready, check for A press
+		if A press, set Index = 5
+	5:
+		Restore control to WorldEngine, which will continue scripting.
+		VBLK: Restore nametable and attributetable to vram
+		
+SO! We need two new routines:
+	SelectRoutine for Main
+	SelectRoutine for VBLANK
+		

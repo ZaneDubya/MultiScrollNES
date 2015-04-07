@@ -1,0 +1,9 @@
+PHANTOM TRANSACTION
+
+Transaction errors are effecting the consistency of data in cyberspace.
+
+The world is in upheaval: the Catalyst, a data opcode which allows a Sprite
+to duplicate any data they wish - has altered the balance of power. An evil
+Sprite known as the Phantom has arisen, using this power to grab more cycles for
+himself.
+

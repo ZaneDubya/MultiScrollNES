@@ -1,0 +1,107 @@
+CODE AUDIT 06-17-14
+
+Core.asm
+    Reset (Called on Reset Interrupt)
+        > NMI, Screen, Interrupts off.
+        = Falls through to Startup
+    
+    Startup
+        > Clear RAM
+        > Detect NTSC/PAL/Dendy
+        > Initialize FamiTone
+        > Initialize Input
+        > Initialize Map Graphics
+        * Initialize Map
+            + Need to break this out to its own routine so we can load other maps.
+        > Initialize Sprite Graphics
+        * Initialize DEBUG Sprites. Remove this.
+        > Set GameMode to World, turn on NMI
+        > Play song
+        = Enter Infinite Loop
+    
+    Main
+        > Set MainInProgress
+        > FamiToneUpdate
+        > UpdateTimers
+        > Input_Get
+        > GoMainRoutine
+        > Update the Camera
+            > MapService_UpdateCamera
+            > Copies CameraCurrentX to Scroll_X values
+        > Write Sprites to OAM Buffer
+            > Sprite_BeginFrame
+            > Actor_DrawDynamics
+            > Sprite_EndFrame
+        > Load new map data based on scrolling
+        > Clear MainInProgress
+        = Return
+    
+    GoMainRoutine
+        > Choose a engine based on GameMode
+            0 = Reset
+            1 = WorldEngine
+            2 = TextEngine
+        = ChooseRoutine
+    
+    ChooseRoutine
+        > Indirect Jump Routine. Uses return address from calling routine.
+        
+Interrupts.asm
+    MNI (Called on Non Maskable Interrupt)
+        > FrameCount++
+        > If !FlagDoNMI
+            = Return
+        > If FlagMainInProcess
+            = Return
+        > If MapBuffer_Flags
+            MapService_CopyRowColData
+        > Set Scroll value for next screen.
+        > Sprite DMA
+        > Main
+        = RTI
+
+Famitone2.asm
+    Music engine. Need not be described in depth.
+
+Library.asm
+    GetTVSystem
+        - Supposed to determine 
+Controller.asm
+    Input_Init
+        > Clears input variables
+        > Return
+    Input_Get
+        Reads Controllers (using reliable but slow routine)
+    _read_joy_fast
+        Fast but unreliable while DMC is playing
+    _read_joy
+        4x as slow, but reliable even while DMC is playing
+
+WorldEngine.asm
+    WorldEngine - handles controls, etc, for in world
+        > Scroll on ULDR
+        = Fall through to World_CheckController
+    World_CheckController
+        > Play effects, etc.
+        = Return
+TextEngine.asm
+    TextEngine_DisplayMsg - set game mode to text engine and display a message
+    TextEngine - main routine for text engine. call from go main routine.
+
+MapService.asm
+    MapService_LoadTileset
+    MapService_WriteScreen
+    MapService_LoadNewData
+    MapService_CopyRowColData
+    MapService_UpdateCamera
+    
+SpriteService.asm
+    Sprite_BeginFrame - resets oam index and gets the first superchunk for sprites.
+    Sprite_EndFrame - makes all non-written sprites invisible.
+    Sprite_DrawSprite - draws a single sprite. Called from Actor_DrawDynamics
+    Sprite_Setup - copies palette data based on SprPalette0.
+Actors.asm
+    Actors_DrawDynamics
+        > Draws all dynamics, in the order of the sort array.
+            Uses Sprite_DrawSprite
+        = Return

@@ -1,0 +1,9 @@
+IMAGINET Buildings
+0	Tavern					"BITS & NYBBLES"
+1	Upgrade Facility		"WAREZ R US"
+2	Town Hall
+3	Library
+4	InterLink
+5	Game Center
+6	Bank
+7	Oracle

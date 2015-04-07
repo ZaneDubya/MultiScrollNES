@@ -1,0 +1,68 @@
+SCENE: Introduction
+
+The screen is dark. The byline fades in:
+A ZANE WAGNER PRODUCTION
+
+We fade in at the INTERLINK - a spired structure.
+There's a flash of lightning, and a golden sprite man
+walks out of the structure. He pauses for a moment, then
+turns and walks to the right. We pan with him - and the
+background fades out.
+
+That single golden sprite continues to walk across the
+dark screen. Text fades in:
+
+SOMEWHERE IN A DARK
+CORNER OF CYBERSPACE...
+
+The text fades back out along with the sprite...
+After a beat, the background resolves into a digital
+tavern. Sprites move back and forth, almost all blue.
+A green one stands at the bar. The gold-colored sprite
+approaches the green. A conversation window opens.
+
+Outsider (gold colored sprite):
+	"I'm looking to hire a team to do a little data-
+	extraction on my employer's behalf..."
+Alex (green colored sprite):
+	"You're talking to the right person. Name's Alex.
+	What exactly did you have in mind?"
+Outsider:
+	"A data extraction mission."
+	"Before I hire you, I'll need to see your team's credentials."
+* 	The party selection menu comes up.
+*	The player selects four different roles for the party.
+*	The tavern reappears. Three other sprites at the bar turn around
+	and become green shaded.
+Outsider:
+	"Yes... you'll do nicely."
+	"We can't talk here. Too many people. Meet me with your team
+	at my private booth over there."
+*	The Outsider moves to a booth nearby.
+* 	The player now has total control over the green
+	colored sprite. The player can talk to tavern patrons,
+	prompting several scripted sequences.
+	* If the player attempts to leave, the bartender calls out:
+		"Hey! Alex, you wouldn't be trying to leave without
+		paying your bill, would you?"
+	* If the player talks to the bartender:
+		"The bill for your party comes to $100."
+		Alex:
+		"..."
+		"Put it on my tab."
+		Bartender:
+		"Your tab is maxed out, Alex. I won't let you leave until you pay."
+
+SCENE: The Outsider's Quest		
+
+	* At the booth:
+Outsider:
+	"(((gives information about job to be done)))."
+	The outsider pays off the party's bills, and gives the player
+	a location chip.
+	
+	The location chip can be used at the Interlink - a building in town.
+	Other buildings in town include a store for upgrading equipment, the
+		tavern, and various other locales (see Town.txt).
+	
+	The other locations aren't open yet, for various reasons.

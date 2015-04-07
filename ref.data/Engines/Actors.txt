@@ -1,0 +1,154 @@
+Description of Actors in RAM (active) and in ROM.
+Last updated 07/09/14
+
+=============================[ Table of Contents ]==============================
+
+1.      Actors In ROM
+1.A.        Actor Type Definitions
+1.B.        Actor Combat Data Definitions
+1.C.        Actor Lists in Map Data
+1.D.        Actor Scripts
+2.      Actors In RAM
+2.A.        Active Actor Array
+2.B.        Active Actor Y-Sorting
+3.      Actor Notes
+
+==============================[ 1. Actors In ROM ]==============================
+Actor definitions, placement in the world, and scripting are handled with the 
+eightbit utility.
+
+------------------------[ 1.A. Actor Type Definitions ]-------------------------
+Object data definition, 8b each (32 per 256b)
+    1b Sprite Definition Index
+    1b Initial Sprite Frame
+    1b Initial Bitflag
+        VBID ....
+        V - Visible (has sprite) (both this and the Actor List bitflag V must be
+            set for the sprite to be visible!)
+        B - Blocking
+        I - Interactable (displays 'A' button when close, has interact script)
+        D - is a dynamic actor (has main script, ticks)
+    1b Combat data definition index ($ff = no script)
+    2b Pointer to interaction script ($0000 = no script)
+    2b Pointer to dynamic script header ($0000 = no script)
+        Format for pointers is BBpppppp pppppppp
+            B - bank offset (0-3) from global scripts bank.
+            p - pointer inside specified bank.
+                (points to to %10pppppp pppppppp, $8000 - $bfff)
+    
+---------------------[ 1.B. Actor Combat Data Definitions ]---------------------
+Not yet implemented.
+
+------------------------[ 1.C. Actor Lists in Map Data ]------------------------
+
+**** MapData.txt references this section.
+
+If a SuperChunk has the 'A' flag in its bitflags, the following data structure
+is included in the map data:
+
+	1b Actor list length
+    1b Actor count
+    Each Actor is 4 bytes:
+        1b location (yyyyxxxx, in tiles)
+        2b actor type
+        76543210 76543210
+        tttttttt vvvvTTTT
+            t: actor definition index, 0-255
+            T: extended actor definition index, 256-4095
+            v = variable bitflags (3210): these variables follow as bytes.
+        1b flags
+        76543210
+        V.ccffP.
+            
+            f = initial facing (N = 0, E = 1, S = 2, W = 3)
+            P = Pause flag.
+            V = Visible flag.
+            c = Palette (color).
+
+        
+-----------------------------[ 1.D. Actor Scripts ]-----------------------------
+When an actor is 'ticked', it begins running its script. Actor scripts are
+'cooperatively multitasked' - along with the rest of the engine - and thus each
+Actor Script must (a) give up control when it is done running, and (b) must not
+run for many cycles before it gives up control.
+
+When the actor script begins running, the index of the actor running the script
+will be in the 'x' register (for easy access to the actor variables). The actor
+may use the variables $00 - $0B as scratch space. Writing any other RAM location
+will doubtless cause unknown behavior and may cause the Engine to crash.
+
+The script may call a number of subroutines in the Core bank that extend the
+functionality of the actor script.
+
+For thoughts on Actor scripting, refer to 'ActorScripting.txt'.
+
+==============================[ 2. Actors In RAM ]==============================
+
+
+--------------------------[ 2.A. Active Actor Array ]---------------------------
+Actor data array in active memory (16 x 16b actors 'alive', 256b total)
+* Actors can be 'static', which can be interactable but do not have
+  update scripts and are not ticked, or Dynamics, which have update
+  scripts and are ticked every frame.
+* Each actor's data is interleaved with the others in 16b segments.
+  The segments are as follows:
+  
+    $0x00   Actor_Bitflags
+            VBID ..PR
+            V - Visible (has sprite)
+            B - Blocking
+            I - Interactable (shows 'A' button when near, has interact script)
+            D - is a dynamic actor (has main script, ticks)
+            
+            P - 'Pause' - if dynamic, do not tick scripts on this actor.
+            R - Running; has been instantiated. (if 0, empty actor slot).
+            
+    $0x10   Actor_X - X pixel position in superchunk
+    $0x20   Actor_Y - Y pixel position in superchunk
+    $0x30   Actor_SuperChunk - Superchunk this actor is located within
+            Wraps at 3.
+    $0x40   Actor_ID & Actor_IDHi
+            2-byte unique identifier for this actor.
+    $0x60   Actor_ObjPtr & Actor_ObjPtrHi
+            2-byte pointer to object data that defines this actor.
+    $0x80   Actor_ScriptPtr & Actor_ScriptPtrHi
+            2-byte pointer to current executing script
+    $0xA0   Actor_Var0 - Actor_Var3
+            4 1b variables, used with the current executing script
+    $0xE0   Actor_Action
+            Used to run an action instead of executing the script every frame.
+    $0xF0   Actor_Frame
+            Current sprite frame to display if the actor is visible.
+
+For actors, flag/id is set on death, also on load, unset on unload if not dead.
+	if flagid is $ffff, there is no id, and we always load.
+    
+Dynamic action bitflag format: oooo AAAA
+A___   	Notes
+$0      No action. Execute script.
+$1      Wait. No execute until wait is complete.
+        Sum of offset and 1 is multiplied by 15, result is number of frames to
+        wait. This command uses Var3 as a counter, and thus wipes the same out.
+        o = $0 wait 15 frames (1/4 second)
+            $1 wait 30 frames (1/2 second)
+            $3 wait 60 frames (1 second)
+            $f wait 240 frames (4 seconds)
+$2      Moving, tile based. Offset includes direction and movement and speed.
+        This command uses Var3 as a counter, and thus wipes the same out.
+        Offset format is ddss, where d is the direction, and s is the speed.
+        d: n = 00, e = 01, s = 10, w = 11
+        s:  $3 = move 2 pixels per frame. Moving one tile takes 8 frames.
+            $2 = move 1 pixel per frame. Moving one tile takes 16 frames.
+            $1 = move 1 pixel every other frame. Moves one tile in 32 frames.
+            $0 = move 1 pixel every fourth frame. Moves one tile in 64 frames.
+$3      Animating, o is the animation script.
+
+
+------------------------[ 2.B. Active Actor Y-Sorting ]-------------------------
+Actor sort array (16 x 1b indexes, 16b total)
+* The y-sort array is at $00D0 and contains 16 indexes.
+* Actors are y-sorted every frame.
+
+===============================[ 3. Actor Notes ]===============================
+To clear an actor, you must both clear the actor's index in the sort array, AND
+clear bit 0 of that actor's BitFlags.

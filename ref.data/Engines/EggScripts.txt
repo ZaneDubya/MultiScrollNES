@@ -1,0 +1,8 @@
+Examples of EggScript Commands.
+    Play SoundEffect
+    Move Camera
+    Pause
+    Play Music
+    Create Sprite
+    Move Sprite
+    Change Palette.

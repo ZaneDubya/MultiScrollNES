@@ -1,0 +1,47 @@
+Description of all GameModes and their functions.
+Last updated 11/27/2013
+
+Main
+ChooseMode
+	A. WorldMode - handles all world updating
+		1. ActorUpdate - run update routines on all loaded actors.
+			Movement
+			What else do actors do in the world? Basically pretend to do things.
+			* Note: actors can share some common routines (moveto)
+		2. EggUpdate? - check all in-range egg conditions.
+            Triggering data is saved and compared.
+			?GameModeChanged
+				Y> Return from WorldMode
+		3. Camera update - scroll based on main actor position or camera object.
+            These are set by flags. Never scroll past bounds. Check inertia.
+		4. Check for scroll trigger
+			Y> MapUpdate, loads tiles, new cells if necessary.
+		5. Check action buttons <if any, Return from WorldMode>
+			?A - CheckActivate (activate object is flagged; if nothing present, no activate noise)
+				?> Activate or no-activate-noise.
+			?B - LoadInGameMenu OR Nothing
+			?Select - Map
+			?Start - Menu
+		6. Check movement buttons
+			?Movement buttons down
+				Y> Set move flags on actor.
+		
+	B. LoadMap
+		Loads initial map data. Shares code with MapUpdate for loading rows/columns of tiles, and new cells.
+		
+	C. Conversation
+		Allows the player to engage in (doubtless enthralling) conversations with Actors.
+		Contains functionality for scripting, checking flags, if you have an object, and so on.
+		
+	D. TextEngine
+		Already coded, except for placing text in the world (although this was in previous revs and should be recoverable).
+		
+	E. MenuEngine
+		Working with TextEngine, allows the display of menus in either full screen or partial screen representations.
+		The current menu set up is controlled by an index offset by selected, which can be stacked four deep.
+		Loading a Menu is easy: Set the menu index, set the offset, and call MenuLoad. The MenuData itself contains information
+		as to what to display and where to display it.
+		
+Display
+	
+	

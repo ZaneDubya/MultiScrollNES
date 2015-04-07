@@ -1,0 +1,19 @@
+Milestone A
+    1. The player actor loads.
+        Need debug actor data for player.
+    2. The player actor moves in a random direction and stops.
+        Need action handling for 'stand', 'wait', and 'move'.
+        Tile handling routines for actors.
+    3. The player actor animates.
+        Need animation routine.
+    4. The player actor is moved with the controller.
+        Need controller routine moves player
+    5. The camera follows the player.
+        Update camera routine
+    6. The player is blocked by walls.
+        Update flag data in utility
+        Check flag data in ROM, block movement.
+Milestone B
+    There are multiple other actors present
+Milestone C
+    Player can interact with other actors, statics and dynamics.

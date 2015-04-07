@@ -1,0 +1,22 @@
+From http://www.6502.org/tutorials/compare_instructions.html
+
+The Compare Instructions 
+CMP 	Compare Memory and Accumulator 
+CPX 	Compare Memory and Index X 
+CPY 	Compare Memory and Index Y 
+
+Use of Branch Instructions with Compare
+Test:		Branch If:	Opposite:					
+R < M		BCC THERE	BCS THERE
+
+R == M		BEQ THERE	BNE THERE
+
+R > M		BNE THERE	BEQ THERE
+			BCS THERE	BCC THERE
+			
+R <= M		BCC THERE	BCS THERE
+			BEQ THERE	BNE	THERE
+			
+R >= M		BCS THERE	BCC THERE
+
+For an 'if-endif' macro (no else or elseif; these are done by if-jump endif-else-if-endif-endif)

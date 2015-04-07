@@ -1,0 +1,23 @@
+Updated 02/18/2014
+
+From Password.txt 02/18/2014:
+	Char Struct:
+	Bits	Description
+	2		Base class (4 possibilities)
+	2		Armor progression
+	2		Weapon progression
+	2		Utility progression
+	8		Level up choices (Level is taken from Progression)
+	
+Base Class:
+Tank		Engineer		Highest defense, taunt
+Healer		Architect		High defense, buff, heal
+DPS			Hacker			Med defense, deal most damage to a single target
+Utility		Blackhat		Low defense, area effect, damage, weaken targets
+
+Item Progression (Armor/Weapon/Utility):
+A character can have only one item at a time in each slot. These are upgraded
+when the party finds an item or buys an item.
+
+Level up choices:
+At each level, the character chooses an upgrade. This is a binary choice.

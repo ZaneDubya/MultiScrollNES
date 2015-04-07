@@ -1,0 +1,20 @@
+ProgressionFlags: 3 bytes, in the demo. (+1 additional byte...)
+	Byte 4 can be written/read, but is not saved.
+	
+TemporaryFlags: 1 byte, unsaved, reset on location change, etc.
+	Examples: conversations had, events, so on.
+	Referenced by %01000000
+	
+StateFlags: are unsaved, set by game, 1 bytes
+	Examples: in_town.
+	Referenced by %10000000
+
+	
+	
+Progression flags: 24 bits
+	4	Dungeon completion.
+	20	Dungeon stage completion
+            Battles completed
+            Riddles/puzzles solved
+            Quests accepted/completed.
+	

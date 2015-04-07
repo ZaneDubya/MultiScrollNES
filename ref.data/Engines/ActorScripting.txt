@@ -1,0 +1,47 @@
+Example script that will cause an actor to walk in a square (67 bytes):
+Again:
+    lda [ActorActionMove|DirectionEast|Speed1]
+    sta Actor_Action,x
+    jsr ActorScript_Yield
+    lda [ActorActionWait|$f0]
+    sta Actor_Action,x
+    jsr ActorScript_Yield
+    lda [ActorActionMove|DirectionSouth|Speed1]
+    sta Actor_Action,x
+    jsr ActorScript_Yield
+    lda [ActorActionWait|$f0]
+    sta Actor_Action,x
+    jsr ActorScript_Yield
+    lda [ActorActionMove|DirectionWest|Speed1]
+    sta Actor_Action,x
+    jsr ActorScript_Yield
+    lda [ActorActionWait|$f0]
+    sta Actor_Action,x
+    jsr ActorScript_Yield
+    lda [ActorActionMove|DirectionNorth|Speed1]
+    sta Actor_Action,x
+    jsr ActorScript_Yield
+    lda [ActorActionWait|$f0]
+    sta Actor_Action,x
+    jsr ActorScript_Yield
+    jmp Again                                       ; repeat.
+    
+Making the script more efficient (43 bytes):
+Again:
+    lda [ActorActionMove|DirectionEast|Speed1]
+    jsr ActorScript_SetAction                       ; calls ActorScript_Yield
+    lda [ActorActionWait|$f0]
+    jsr ActorScript_SetAction
+    lda [ActorActionMove|DirectionSouth|Speed1]
+    jsr ActorScript_SetAction
+    lda [ActorActionWait|$f0]
+    jsr ActorScript_SetAction
+    lda [ActorActionMove|DirectionWest|Speed1]
+    jsr ActorScript_SetAction
+    lda [ActorActionWait|$f0]
+    jsr ActorScript_SetAction
+    lda [ActorActionMove|DirectionNorth|Speed1]
+    jsr ActorScript_SetAction
+    lda [ActorActionWait|$f0]
+    jsr ActorScript_SetAction
+    jmp Again                                       ; repeat.

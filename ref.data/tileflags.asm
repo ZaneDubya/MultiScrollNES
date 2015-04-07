@@ -1,0 +1,8 @@
+%00000001 Block
+%00000010 Difficult
+%00000100 OpenToBelow
+%00001000 Flag3
+%00010000 Flag4
+%00100000 Flag5
+%01000000 Flag6
+%10000000 CameraHalt

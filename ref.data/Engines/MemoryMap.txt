@@ -1,0 +1,24 @@
+$00: main engine
+	$00: Scratch space. Used for temporary values.
+	$10: FREE
+	$20: Core/screen variables
+	$30: Library variables
+	$40: Camera variables
+	$50: Map data
+	$60: Map data vblank buffer
+	$70: Map data vblank buffer
+	$80: Map data vblank buffer
+	$90: Map data vblank buffer
+	$A0: Map data vblank buffer
+	$B0: Map data vblank buffer
+	$C0: Tileset
+	$D0: Dynamics sort array
+	$E0: FREE
+	$F0: Flags / save data
+$01: Stack / famitone library
+$02: Sprite oam buffer
+$03: World dynamics data
+$04: World statics data (superchunks 0/1/2/3 )
+$05: Current engine
+$06: Current engine
+$07: Current engine

@@ -1,0 +1,150 @@
+Description of MapData
+Last updated 07/09/14
+
+DEFINITIONS
+A map is a square of SuperChunks.
+The size of the map can be from 8x8 to 64x64 superchunks.
+A SuperChunk is 2x2 Chunks.
+Each Chunk is 8x8 MetaTiles.
+A MetaTile is 2x2 8x8 Graphic Tiles + Attribute (block, etc.).
+
+MAPS
+Each map is comprised of a Map Header, Superchunk Pointer Set, and Superchunk Data.
+
+
+MAP HEADER
+Each map is described by a 2b header value. These headers are located in the core ROM bank.
+
+1b bank/index - location of main map bank
+    76543210
+    BBBBBiii
+    B = bank where Superchunk Pointer Set is located (0-31)
+    i = index of SuperChunk location in specified bank (0-7)
+1b tileset used by this map and size flag
+    76543210
+    sstttttt
+    s = size of map
+        00 = 8x8    (2048p square map, pointer set is 64x2 = 128b)
+        01 = 16x16  (4096p square map, pointer set is 256x2 = 512b)
+        10 = 32x32  (8192p square map, pointer set is 1024x2 = 2kb)
+        11 = 64x64  (16384p square map, pointer set is 4096x2 = 8kb)
+    t = tileset used by this map.
+
+    
+SUPERCHUNK POINTER SET
+The Superchunk Pointer Set is 2kb, and is located in bank B (0-31), at
+[$8000 + $00iii000 00000000], where B and i are taken from the Map header.
+
+The Superchunk Pointer Set designates a set of 8x8 to 64x64 superchunks. The Superchunk
+Pointers are interleaved by halves. For a 32x32 superchunk map, the pointers are laid out
+as such:
+
+    $0000 Map Lo byte SuperChunk pointer (1024)
+    $0400 Map Hi byte SuperChunk pointer (1024)
+
+Each pointer is 2 bytes, and is comprised of:
+    76543210 76543210
+    bbbppppp ppPPPPPP
+        b = bank offset (0-7) added to the bank value B from the map header.
+        pP = pointer, pointing to $8000 + %00PPPPPP ppppppp0
+        Note that bank index can be incremented based on map index.
+        
+    If a pointer is $0000, then there is no data for this superchunk. Otherwise, the
+    pointer points to memory location: [$8000 + %00PPPPPP ppppppp0] in bank [B + b].
+    
+SUPERCHUNK DATA SET
+Each SuperChunk data set is comprised of 1b flags, 5b Chunk indexes, and any
+combination of the following:
+    * Alternate SuperChunk data
+    * Actor data
+    * Egg data
+    
+1b Flags
+    76543210
+    .....EAL
+    L = 1 : has aLternate superchunk data
+    A = 1 : has Actor data
+    E = 1 : has Eggs data
+
+5b Chunk Indexes
+    4b Chunks in this SuperChunk
+    1b Hi bits for Chunks
+        76543210
+        BRblURul
+
+if (L)
+{
+    1b length of alternate superchunk data
+    1b number of alternate superchunk scenarios
+        2b flag to show alternate superchunk
+        2b alternate superchunk pointer.
+}
+if (A)
+{
+	Actor List (loaded when chunk loads).
+    See 'Actors.txt', Section 1.B. Actor Lists in Map Data for this data.
+    Note that Actors listed in this section will ALWAYS be loaded when this
+        SuperChunk loads. Actors that should only appear on certain conditions
+        should be included as eggs.
+}
+if (E)
+{
+	Egg List (checked on movement)
+	1b Egg count
+        Each egg:
+        1b length
+        1b Location (yyyyxxxx)
+        1b Condition count, 0 = always
+        Each condition is dddddTTT, sometimes followed by dddddddd (which counts as the low byte)
+            Type 000: flag (with following byte d) must be clear (0)
+            Type 001: flag (with following byte d) must be set (1)
+            Type 010: probability rnd 0-31 is equal to or greater than ddddd.
+            Type 011: item: item in inventory with type d, following d.
+            Type 100: step on this tile, within range d.
+            Type 101: step on this x-row, within range d.
+            Type 110: step on this y-column, within range d.
+        1b Effect count
+        Each effect is dddddEEE, sometimes followed by other bytes
+            Effect 000: set flag ddddd+dddddddd to 0
+            Effect 001: set flag ddddd+dddddddd to 1
+            Effect 010: spawn actor list (same as list from Actors.txt).
+                        Can also be used for missiles, if necessary.
+            Effect 011: ...............
+            Effect 100: teleport (ddd = map, dd = hi xy, following bytes hi xy, x, y, facing?)
+            Effect 101: remove item with type d, following byte d.
+            Effect 110: ...............
+            Effect 111: run EggScript. Format ssvvv111 ssssssss [v0..v7]
+                        s = script index (0-1023)
+                        v = variables following this effect (0-7).
+                        >>>> See EggScripts.txt for more details.
+}
+
+TileSet banks (4 TileSets per bank, 800 left over)
+* Updated 01/02/13
+	Tileset header: 2b pointers.
+	
+	Each tileset is 1848b, organized as follows:
+	255 MetaTile bitfields
+	1b pal index zero
+	255 MetaTile attributes
+	1b palette 0
+	255 MetaTile graphics UL
+	1b palette 1
+	255 MetaTile graphics UR
+	1b palette 2
+	255 MetaTile graphics LL
+	1b palette 3
+	255 MetaTile graphics LR
+	byte tilecount, always 208
+	tilecount b tiles low bytes.
+	tilecount / 2 b tiles hi byte
+		-	(lo nibble is for $0 index, hi nibble is for $1 index)
+		-	Tile graphic index is a 12 bit number, 0-4095
+	200 free bytes follow each tileset.
+
+Tile gfx banks (up to 8 8-kb banks)
+    2x 256 x 16 byte tiles each
+
+Chunk banks (up to 8 8-kb banks)
+    128 x 64 byte chunks each
+

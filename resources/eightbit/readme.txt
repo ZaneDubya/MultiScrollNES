@@ -1,0 +1,1 @@
+This is the default resource file. It will only be copied if the 'My Games\eightbit' folder does not exist or is empty.
