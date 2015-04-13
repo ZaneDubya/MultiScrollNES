@@ -1,9 +1,8 @@
 # GalezieNES
 Galezie, an example multi-directional scroll engine for the Nintendo
-Entertainment System (NES). This project is no longer under development and is
-released under the MIT license. Documentation for the various file formats and
-engine routines can be found in the 'reference' folder, but no warranty is made
-as to the correctness of this information.
+Entertainment System (NES). This project is released under the MIT license.
+Documentation for the various file formats and engine routines can be found
+in the 'reference' folder.
 
 Assemble using Ophis: http://michaelcmartin.github.io/Ophis/
 
