@@ -12,18 +12,20 @@ map. Written in C#/XNA. This project is released under the MIT license.
 # If6502
 A macro interpretter that allows the use of comparison operators, bracket
 scoping, and while loops in 6502 asm files:
-        .if a >= #240
+````
+    .if a >= #240
+    {
+        ldx delta_hi
+        .if x == #$ff
         {
-            ldx delta_hi
-            .if x == #$ff
-            {
-                `add 240
-            }
-            .else
-            {
-                `sub 240
-            }
+            `add 240
         }
+        .else
+        {
+            `sub 240
+        }
+    }
+````
 
 Assemble using Ophis: http://michaelcmartin.github.io/Ophis/
 
