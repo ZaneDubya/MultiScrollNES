@@ -86,7 +86,7 @@ MapService_WriteScreen:
 	; check if we need to load new superchunks.
 	jsr MapService_CheckLoadedSuperChunks
 	
-	`A53_SwitchBank Bank_ChkData
+	`Mapper_SwitchBank Bank_ChkData
 	
 	; get the x and y offsets for tiles (0 - 63), place them in x and y
 	jsr Map_GetFirstSubTilesInXY

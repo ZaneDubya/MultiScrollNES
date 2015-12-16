@@ -1,5 +1,6 @@
 REM Make.bat
-REM Created for Galezie by Zane Wagner. (c) 2013.
+REM Created for MultiScrollNES by Zane Wagner. (c) 2013.
+REM Expects two inputs: 1 = codebase directory, 2 = mapper directory within codebase.
 
 :start
 @echo off
@@ -21,6 +22,9 @@ exit /b
 REM Set the work directory.
 set workdir=obj
 set srcdir=%1
+set mapperdir=%srcdir%\%2
+echo %mapperdir%
+
 
 REM Delete existing work directory and create a new work directory
 if not exist %workdir% goto make_work_dir
@@ -28,30 +32,31 @@ rmdir /s /q %workdir%
 :make_work_dir
 mkdir %workdir%
 
-REM Copy data/code from the source directory to the work directory.
-echo|set /p=Copying make files...
-copy %srcdir%\prg.txt %workdir%\prg.txt >NUL
-echo  done.
+REM Copy prg/code/data from the source directory to the work directory.
+REM PRG Files.
+echo|set /p=Copying %mapperdir% PRGROM files...
+xcopy %mapperdir% %workdir% /S /q
+REM Data files
 echo|set /p=Copying Data files... 
 mkdir %workdir%\data
 xcopy %srcdir%\data %workdir%\data /S /q
-echo|set /p=Copying PRG files... 
-mkdir %workdir%\PRG
-xcopy %srcdir%\PRG %workdir%\PRG /S /q
-util\if6502 %srcdir%/code %workdir%/code -all
+REM Code files. We process them with if6502.
+echo|set /p=Processing and Copying Code files... 
+echo.
+utilities\if6502 %srcdir%/code %workdir%/code -all
 
 REM Create make.asm file to combine all assembled PRGs into the final ROM.
 if not exist %workdir%\make.asm goto make_make_asm
 del %workdir%\make.asm
 :make_make_asm
 copy /y NUL %workdir%\make.asm >NUL
-echo .outfile "bin/%srcdir%.nes" >> %workdir%\make.asm
-echo .include "code/header.asm" >> %workdir%\make.asm
+echo .outfile "bin/%2.nes" >> %workdir%\make.asm
+echo .include "header.asm" >> %workdir%\make.asm
 
 REM compile each of the banks in prg.txt, and add each to the make.asm file.
 for /f "tokens=1-2 delims=," %%G in (%workdir%/prg.txt) do (
 	echo|set /p=%%G: 
-	ophis -o "%workdir%/%%H.bin" "%workdir%\PRG\%%H.asm"
+	ophis -o "%workdir%/%%H.bin" "%workdir%\%%H.asm"
 	echo .incbin "%%H.bin" >> %workdir%\make.asm
 )
 

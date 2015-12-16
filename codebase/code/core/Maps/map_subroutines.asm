@@ -155,7 +155,7 @@ MapService_LoadSuperChunk:
 .alias	_SuperChunkPtr		$02
 .alias	_SC_Flags			$04
 .alias	_ChunksOffset		$05
-	`A53_SwitchBank Bank_MapData
+	`Mapper_SwitchBank Bank_MapData
 ; set the offset into memory where we will be saving the chunk indexes
 	txa
 	pha

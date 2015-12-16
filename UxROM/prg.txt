@@ -1,4 +1,0 @@
-0,map
-1,gfx
-2,audio
-3,core

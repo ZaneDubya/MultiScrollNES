@@ -139,7 +139,7 @@
 
 .macro FT_SwitchBank
 	pha
-	`A53_SwitchBank 2
+	`Mapper_SwitchBank 2
 	pla
 .macend
 

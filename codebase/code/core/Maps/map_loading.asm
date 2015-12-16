@@ -10,7 +10,7 @@ MapService_LoadRow:
 
 	pha	; save a
 	
-	`A53_SwitchBank Bank_ChkData
+	`Mapper_SwitchBank Bank_ChkData
 	
 	lda #$20
 	sta _ppu_addr_temp
@@ -47,7 +47,7 @@ MapService_LoadCol:
 
 	pha	; save a
 	
-	`A53_SwitchBank Bank_ChkData
+	`Mapper_SwitchBank Bank_ChkData
 	
 	lda #$20
 	sta _ppu_addr_temp

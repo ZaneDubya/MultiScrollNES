@@ -2,14 +2,15 @@
 Reset:
 	cld								; processor to binary mode
 	sei								; disable IRQ
-	sta $e000						; acknowledge/disable the IRQ
+	sta $e000						; acknowledge/disable the IRQ (MMC3)
 	
-	`A53_Setup						; set up the A53 (Mapper 28)
+	`Mapper_Setup					; set up the Mapper (A53, MMC1, MMC3, etc.)
 	ldx #$00						; Clear PPU control registers
 	stx PPU_CTRL					;	|
     stx PPU_MASK					;	|
 	stx GameFlags					; clear initialized flag (and all others)
 									; fall through to Startup
+
 ;---------------------------------[ Startup ]-----------------------------------
 ; NMI is off, Screen is off, rendering is off.
 ; we have disabled interrupts and cancelled pending interrupts.

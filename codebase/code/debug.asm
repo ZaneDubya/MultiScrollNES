@@ -5,7 +5,7 @@ Debug_LoadCHRRAM:
     .alias	_TileGfxRom		$B000		; Location of tilegfx in tilegfx bank.
     
 	; copy all 512 tiles in the bg graphic set to chrram.
-	`A53_SwitchBank Bank_TilGfxData
+	`Mapper_SwitchBank Bank_TilGfxData
 	`SetPointer _GfxPtr, _TileGfxRom	        ; set the pointer to the tile gfx data.
 	`SetPPUAddress $0000				        ; set PPU Address to CHR 0 ($0000)
 	jsr _CopyGfxBank

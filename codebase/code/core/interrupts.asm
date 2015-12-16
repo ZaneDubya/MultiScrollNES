@@ -1,4 +1,4 @@
-; Handles NMI for the A53 (Mapper 28).
+; Handles NMI for a single screen mapper (Examples: Action 53, MMC1)
 
 .scope
 ;--------------------------[ Non-Maskable Interrupt ]---------------------------

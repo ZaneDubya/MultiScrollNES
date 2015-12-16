@@ -149,5 +149,4 @@
 
 .require "defines_enums.asm"
 .require "defines_banks.asm"
-.require "defines_a53.asm"
 .require "defines_registers.asm"

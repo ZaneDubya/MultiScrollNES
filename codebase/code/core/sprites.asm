@@ -73,7 +73,7 @@ Sprite_DrawSprite:
 	rts
 _oam_not_full:
 ; switch the bank to the one containing the sprite data
-	`A53_SwitchBank Bank_SprData
+	`Mapper_SwitchBank Bank_SprData
 ; get the pointer to the first sprite frame data and the sprite header byte
 	`SetPointer _PtrSprHdr, SpriteHeaders
 	`SetPointer _PtrSprData, SpriteData
