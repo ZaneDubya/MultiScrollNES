@@ -1,47 +1,29 @@
-; switches an 8kb PRG ROM into a bank
-; MMC3 has two banks available: at $A000 and at $C000
-.macro MMC3_BankA_Switch
-	;lda #%01000111
-	;sta $8000
-	;lda #_1
-	;sta $8001
+; ==============================================================================
+; Debug shading macros - calling these shades the output of the PPU.
+; ==============================================================================
+.macro DebugShadePPU_Normal
+    .alias MaskBG_Normal		%00011000
+    `SetByte PPU_MASK, MaskBG_Normal
 .macend
 
-.macro MMC3_BankA_Switch_Mem
-	;lda #%01000111
-	;sta $8000
-	;lda _1
-	;sta $8001
+.macro DebugShadePPU_Shaded
+    .alias MaskBG_Shaded		%11111000
+    `SetByte PPU_MASK, MaskBG_Shaded
 .macend
 
-.macro MMC3_BankC_Switch
-	;lda #%01000110
-	;sta $8000
-	;lda #_1
-	;sta $8001
+.macro DebugShadePPU_Red
+    .alias MaskBG_Red			%00111000
+    `SetByte PPU_MASK, MaskBG_Red
 .macend
 
-.macro MMC3_BankC_Switch_Mem
-	;lda #%01000110
-	;sta $8000
-	;lda _1
-	;sta $8001
+.macro DebugShadePPU_Blue
+    .alias MaskBG_Blue			%10011000
+    `SetByte PPU_MASK, MaskBG_Blue
 .macend
 
-.macro MMC3_BankA_Switch_X
-	;lda #%01000111
-	;sta $8000
-	;stx $8001
-.macend
-
-.macro SetPPUAddress
-	lda PPU_STATUS	; clear the address latch.
-	lda #>_1
-	sta PPU_ADDR
-	lda #<_1
-	sta PPU_ADDR
-.macend
-
+; ==============================================================================
+; Memory helper macros
+; ==============================================================================
 .macro SetPointer
 ; loads the address in _2 to the pointer in _1. Must be in zp for indirect,y.
 	lda #<_2
@@ -65,6 +47,14 @@
 .macro	CopyByte
 	lda _2
     sta _1
+.macend
+
+.macro SetPPUAddress
+	lda PPU_STATUS	; clear the address latch.
+	lda #>_1
+	sta PPU_ADDR
+	lda #<_1
+	sta PPU_ADDR
 .macend
 
 .macro	ClearVRAM

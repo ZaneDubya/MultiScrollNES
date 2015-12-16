@@ -84,6 +84,7 @@ WorldEngine.asm
     World_CheckController
         > Play effects, etc.
         = Return
+        
 TextEngine.asm
     TextEngine_DisplayMsg - set game mode to text engine and display a message
     TextEngine - main routine for text engine. call from go main routine.

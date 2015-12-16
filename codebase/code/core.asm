@@ -17,35 +17,24 @@
 ;--------------------------------[ RunOneFrame ]--------------------------------
 ; The main engine routine. Called from NMI
 RunOneFrame:
-	.alias MaskBG_Normal		%00011000
-	.alias MaskBG_Shaded		%11111000
-	.alias MaskBG_Red			%00111000
-    .alias MaskBG_Blue			%10011000
-    
+    `DebugShadePPU_Shaded
 	`SetGameFlag FlagMainInProcess
-	`SetByte PPU_MASK, MaskBG_Normal
-	
-    `SetByte PPU_MASK, MaskBG_Blue
+    
 	jsr FamiToneUpdate
 	jsr UpdateTimers						; update Timer1 and Timer2
 	jsr Input_Get							; poll gamepad
-    `SetByte PPU_MASK, MaskBG_Red
 	jsr UpdateGameMode						; Main routine for updating game.
 	
 ; Write sprites to OAM buffer.
-	`SetByte PPU_MASK, MaskBG_Blue
 	jsr Sprite_BeginFrame
-    `SetByte PPU_MASK, MaskBG_Shaded
 	jsr Actors_DrawActors
-    `SetByte PPU_MASK, MaskBG_Blue
 	jsr Sprite_EndFrame
 	
 ; Load new map data
-	`SetByte PPU_MASK, MaskBG_Red
 	jsr MapService_LoadNewData
 
 ; Clear the flag main_in_progress and return
-	`SetByte PPU_MASK, MaskBG_Normal	
+	`DebugShadePPU_Normal	
 	`ClearGameFlag FlagMainInProcess
 	rts
 
