@@ -5,7 +5,7 @@
 ; The NMI is called 60 times a second by the VBlank signal from the PPU.
 ; It is called at scanline 240, which is off the visible area.
 NMI:
-	inc FRAME_CNT
+	inc FrameCount
 	
 	pha
 	`CheckGameFlag FlagDoNMI				; IF Engine is running

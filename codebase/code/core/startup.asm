@@ -50,7 +50,7 @@ Reset:
 	
     ; Set GameMode, turn on NMI.
 	`SetByte GameMode, GameModeWorld
-	`SetByte FRAME_CNT, 0
+	`SetByte FrameCount, 0
 	`SetGameFlag FlagDoNMI
 	`SetByte PPU_CTRL, $88
 	

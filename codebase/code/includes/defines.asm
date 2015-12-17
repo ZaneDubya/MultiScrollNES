@@ -7,25 +7,23 @@
 
 ; $001x - FREE. AVAILABLE: ALL (16)
 
-; $002x - core variables. AVILABILE: NONE
+; $002x - core variables. AVILABILE: $29-$2A (2).
 .alias	GameMode			$0020
 .alias	GameFlags			$0021
 .alias	BankIn8000			$0022
 .alias	BankIn8000_Saved	$0023
-.alias	FRAME_CNT			$0024
+.alias	FrameCount			$0024   ; Increments each frame, rolls over at 256.
 .alias	Ctrl0_Now			$0025	; control pad - current status
 .alias	Ctrl0_Last			$0026	; control pad - status last frame
 .alias	Ctrl0_New			$0027	; control pad - new button pushes
 .alias	TVSystem			$0028	; 0=ntsc, 1=pal, 2=dendy, 3=unknown
-.alias	CameraOffsetX		$0029
-.alias	CameraOffsetY		$002A
 .alias	SCREEN_Y			$002B
 .alias	Scroll_X			$002C
 .alias	Scroll_X2			$002D
 .alias	Scroll_Y			$002E
 .alias	Scroll_Y2			$002F
 
-; $003x - values for library routines. AVAILABLE: $37-$3D (7)
+; $003x - values for library routines. AVAILABLE: $37-$3C (6)
 .alias	Random_Seed			$0030
 .alias	TimerDelay			$0031	; Count down from 9 to 0. Dec each frame.
 .alias	Timer1				$0032	; Decremented every frame after set.

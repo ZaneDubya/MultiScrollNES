@@ -7,16 +7,16 @@
 GetTVSystem:
 	ldx #0
 	ldy #0
-	lda FRAME_CNT
+	lda FrameCount
 nmiwait1:
-	cmp FRAME_CNT
+	cmp FrameCount
 	beq nmiwait1
-	lda FRAME_CNT
+	lda FrameCount
 nmiwait2:
 	inx				; Each iteration takes 11 cycles.
 	bne +			; NTSC NES: 29780 cycles or 2707 = $A93 iterations
 	iny				; PAL NES:  33247 cycles or 3022 = $BCE iterations
-*	cmp FRAME_CNT	; Dendy:    35464 cycles or 3224 = $C98 iterations
+*	cmp FrameCount	; Dendy:    35464 cycles or 3224 = $C98 iterations
 	beq nmiwait2	; so we can divide by $100 (rounding down), subtract ten,
 	tya				; and end up with 0=ntsc, 1=pal, 2=dendy, 3=unknown
 	sec
