@@ -12,10 +12,10 @@ namespace If6502
         {
             string path_in, path_out;
 
-            args = new string[3];
+            /*args = new string[3];
             args[0] = @"../codebase/code";
             args[1] = @"../obj/code";
-            args[2] = "-all";
+            args[2] = "-all";*/
 
             if (ReadArgs(args, out path_in, out path_out))
             {

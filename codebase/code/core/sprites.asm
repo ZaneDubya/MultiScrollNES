@@ -9,10 +9,10 @@ Sprite_BeginFrame:
 	sta OamCurrentIndex
 	sta OamFull
 ; set the current superchunk for sprites
-	lda Scroll_X2
+	lda CameraCurrentX2
 	and #%00000001
 	sta OamCurrentSprChk
-	lda Scroll_Y2
+	lda CameraCurrentY2
 	and #%00000001
 	asl
 	ora OamCurrentSprChk
@@ -116,7 +116,7 @@ _oam_not_full:
 _frame_is_zero:
 ; determine the placement of the sprite on screen
 	lda _x
-	`subm Scroll_X
+	`subm CameraCurrentX
 	sta _x
 	bcs _check_y
 ; sprite wrapped superchunk x
@@ -125,7 +125,7 @@ _frame_is_zero:
 	sta _sprite_superchunk
 _check_y:
 	lda _y
-	`subm Scroll_Y
+	`subm CameraCurrentY
 	sta _y
 	bcs _sprite_on_screen
 ; sprite wrapped superchunk y

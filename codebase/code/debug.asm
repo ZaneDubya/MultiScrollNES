@@ -40,10 +40,10 @@ _Return:
 
 Debug_LoadMap:
     ; Load Debug Map
-	`SetByte Scroll_X, 0
-	`SetByte Scroll_X2, 0
-	`SetByte Scroll_Y, 0
-	`SetByte Scroll_Y2, 0
+	`SetByte Screen_X, 0
+	;`SetByte Scroll_X2, 0
+	;`SetByte Scroll_Y, 0
+	;`SetByte Scroll_Y2, 0
 	`SetByte Screen_Y, 0
 	`SetByte CameraCurrentY, 0
 	`SetByte CameraTargetY,$70

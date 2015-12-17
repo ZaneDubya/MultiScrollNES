@@ -8,14 +8,14 @@ ModeWorld:
     jsr World_CheckController
     ; Move the Camera
     jsr MapService_UpdateCamera
-    lda CameraCurrentX
-    sta Scroll_X
-    lda CameraCurrentX2
-    sta Scroll_X2
-    lda CameraCurrentY
-    sta Scroll_Y
-    lda CameraCurrentY2
-    sta Scroll_Y2
+    ;lda CameraCurrentX
+    ;sta Scroll_X
+    ;lda CameraCurrentX2
+    ;sta Scroll_X2
+    ;lda CameraCurrentY
+    ;sta Scroll_Y
+    ;lda CameraCurrentY2
+    ;sta Scroll_Y2
     
     rts
 }
@@ -25,7 +25,7 @@ World_CheckScroll:
     bne +
     rts
 
-*	tax										; LEFT: Scroll_X = Scroll_X + 1
+*	tax										; LEFT: X = X + 1
     and #PAD_LEFT
     beq +
     lda CameraTargetX
@@ -34,7 +34,7 @@ World_CheckScroll:
     bcc +
     inc CameraTargetX2
     
-*	txa										; RIGHT: Scroll_X = Scroll_X - 1
+*	txa										; RIGHT: X = X - 1
     and #PAD_RIGHT
     beq +
     lda CameraTargetX
@@ -42,7 +42,7 @@ World_CheckScroll:
     sta CameraTargetX
     bcs +
     dec CameraTargetX2
-*	txa										; UP: Scroll_Y = Scroll_Y + 1
+*	txa										; UP: Y = Y + 1
     and #PAD_UP
     beq +
     lda CameraTargetY
@@ -51,7 +51,7 @@ World_CheckScroll:
     bcc +
     inc CameraTargetY2
     
-*	txa										; UP: Scroll_Y = Scroll_Y - 1
+*	txa										; UP: Y = Y - 1
     and #PAD_DOWN
     beq +
     lda CameraTargetY
@@ -67,7 +67,7 @@ World_CheckController:
     bne +
     rts
     
-*	and #PAD_LEFT								; LEFT: play effect 0 on channel 0
+*	and #PAD_LEFT				; LEFT: play effect 0 on channel 0
     beq +
     `PlaySfx 0, FT_SFX_CH0
     

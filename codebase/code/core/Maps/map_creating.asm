@@ -177,7 +177,7 @@ MapService_CreateCol:
 	
 	tya								; THIS IS MAGIC.
 	sta _temp						; a = y + (y_hi >> 1) << 2
-	lda Scroll_Y2
+	lda CameraCurrentY2
 	lsr
 	asl
 	asl

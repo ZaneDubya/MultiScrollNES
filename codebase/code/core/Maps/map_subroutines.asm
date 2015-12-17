@@ -8,12 +8,12 @@ Map_GetFirstSubTilesInXY:
 {
     .alias	_x                  $00
 
-    lda Scroll_X
+    lda CameraCurrentX
     lsr
     lsr
     lsr
     sta _x
-    lda Scroll_X2
+    lda CameraCurrentX2
     and #$01
     asl
     asl
@@ -23,12 +23,12 @@ Map_GetFirstSubTilesInXY:
     ora _x
     tax
 
-    lda Scroll_Y
+    lda CameraCurrentY
     lsr
     lsr
     lsr
     sta _x
-    lda Scroll_Y2
+    lda CameraCurrentY2
     and #$01
     asl
     asl
@@ -47,7 +47,7 @@ Map_GetPPUOffsetFromRow:
     .alias	_ppu_addr_temp		$00
     .alias	_x					$02
         sta _x
-        lda Scroll_Y2
+        lda CameraCurrentY2
         and #$fe
         asl
         `addm _x
@@ -117,20 +117,20 @@ MapService_CheckLoadedSuperChunks:
 {
     .alias _max_x		$00
     .alias _max_y		$01
-        ldx Scroll_X2
+        ldx CameraCurrentX2
         cpx MapBuffer_SC_UL_X
         bne _load_chunks
-        ldy Scroll_Y2
+        ldy CameraCurrentY2
         cpy MapBuffer_SC_UL_Y
         bne _load_chunks
         rts
     _load_chunks:
-        ldx Scroll_X2
+        ldx CameraCurrentX2
         stx MapBuffer_SC_UL_X
         inx
         inx
         stx _max_x
-        ldy Scroll_Y2
+        ldy CameraCurrentY2
         sty MapBuffer_SC_UL_Y
         iny
         iny
