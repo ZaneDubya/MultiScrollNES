@@ -178,9 +178,16 @@ namespace If6502
             return true;
         }
 
+        /// <summary>
+        /// Requires that all control lines (if, elseif, etc) have brackets.
+        /// Allow brackets unmatched to control lines; replace these with .scope and .scend.
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
         private bool passControlFlowToBrackets(List<StringTokenized> lines)
         {
             foreach (ControlLine cl in m_ControlLines)
+            {
                 foreach (BracketPair bp in m_Brackets)
                 {
                     if (!bp.Matched && bp.LineBegin == cl.LineIndex + 1)
@@ -189,6 +196,7 @@ namespace If6502
                         cl.BracketPair = bp;
                     }
                 }
+            }
 
             foreach (ControlLine cl in m_ControlLines)
                 if (!cl.HasBracketPair)
@@ -198,11 +206,15 @@ namespace If6502
                 }
 
             foreach (BracketPair bp in m_Brackets)
+            {
                 if (!bp.Matched)
                 {
-                    iLine = bp.LineBegin;
-                    return false;
+                    lines[bp.LineBegin].CompiledString = ".scope";
+                    lines[bp.LineEnd].CompiledString = ".scend";
+                    // iLine = bp.LineBegin;
+                    // return false;
                 }
+            }
 
             return true;
         }

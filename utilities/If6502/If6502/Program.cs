@@ -12,10 +12,10 @@ namespace If6502
         {
             string path_in, path_out;
 
-            /*args = new string[3];
-            args[0] = "code";
-            args[1] = "obj/code";
-            args[2] = "-all";*/
+            args = new string[3];
+            args[0] = @"../codebase/code";
+            args[1] = @"../obj/code";
+            args[2] = "-all";
 
             if (ReadArgs(args, out path_in, out path_out))
             {
@@ -100,6 +100,7 @@ namespace If6502
                     {
                         path_in = Path.GetDirectoryName(System.Environment.CurrentDirectory);
                     }
+                    string path = System.Reflection.Assembly.GetEntryAssembly().Location;
                     if (!Directory.Exists(path_in))
                     {
                         Console.WriteLine(string.Format(msg_error_doesnotexist, string.Format("input directory '{0}'", path_in)));
@@ -112,8 +113,8 @@ namespace If6502
 
                     if (Directory.Exists(path_out))
                     {
-                        Console.WriteLine("Error: output directory cannot exist if option -all is used.");
-                        return false;
+                        // Console.WriteLine("Error: output directory cannot exist if option -all is used.");
+                        // return false;
                     }
                     else
                     {
