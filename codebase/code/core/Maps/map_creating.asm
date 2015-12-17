@@ -13,37 +13,40 @@ MapService_CreateRow:
     .alias	_tile				$04
     .alias	_lower_y_row		$05
     .alias	_ChunkPtr			$06 ; ... $07
-        `SaveXY
+    
+    `SaveXY
+    
     ; draw the left portion of the row (on the right portion of the screen)
-        txa								; chunk = (x >> 4) | ((y & $30) >> 2)
-        lsr
-        lsr
-        lsr
-        lsr
-        sta _chunk
-        tya
-        and #$30
-        lsr
-        lsr
-        ora _chunk
-        sta _chunk
+    txa								; chunk = (x >> 4) | ((y & $30) >> 2)
+    lsr
+    lsr
+    lsr
+    lsr
+    sta _chunk
+    tya
+    and #$30
+    lsr
+    lsr
+    ora _chunk
+    sta _chunk
 
-        txa								; tile = ((x & $0e) >> 1) | ((y & $0e) << 2)
-        and #$0e
-        lsr
-        sta _tile
-        tya
-        and #$0e
-        asl
-        asl
-        ora _tile
-        sta _tile
-        
-        tya								; use lower tiles if (y & $01) == 1
-        and #$01
-        sta _lower_y_row
-        
-        txa
+    txa								; tile = ((x & $0e) >> 1) | ((y & $0e) << 2)
+    and #$0e
+    lsr
+    sta _tile
+    tya
+    and #$0e
+    asl
+    asl
+    ora _tile
+    sta _tile
+    
+    tya								; use lower tiles if (y & $01) == 1
+    and #$01
+    sta _lower_y_row
+    
+    txa
+    
     _leftPortion:
         and #$1f
         sta _writeindex					; writeindex = x % 32
