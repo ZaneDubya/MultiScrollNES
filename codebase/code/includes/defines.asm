@@ -110,18 +110,19 @@
 .alias	Actor_X			        $0310
 .alias	Actor_Y			        $0320
 .alias	Actor_SuperChunk	    $0330 ; index to loaded superchunk: yyyyxxxx (wraps on x/y > 15).
-.alias	Actor_ID		        $0340
-.alias	Actor_IDHi  		    $0350
-.alias	Actor_ObjPtr		    $0360
-.alias	Actor_ObjPtrHi	        $0370
+.alias	Actor_DefPtr		    $0340 ; ptr to actor definition. these should all be in one bank.
+.alias	Actor_DefPtrHi	        $0350 ;   +
+.alias	Actor_Movement          $0360 ; YXyyyxxx (Neg/Pos and 0-7 pixels/frame)
+.alias	Actor_Frame	            $0370 ; frame from actor_def to show.
+
 .alias	Actor_ScriptPtr	        $0380
 .alias	Actor_ScriptPtrHi	    $0390
 .alias	Actor_Var0	            $03A0
 .alias	Actor_Var1	            $03B0
 .alias	Actor_Var2	            $03C0
 .alias	Actor_Var3	            $03D0
-.alias	Actor_Action            $03E0
-.alias	Actor_Frame	            $03F0
+.alias	Actor_Var4	            $03E0
+.alias	Actor_Var5	            $03F0
 
 ; $04xx - AVAILABLE.
 
