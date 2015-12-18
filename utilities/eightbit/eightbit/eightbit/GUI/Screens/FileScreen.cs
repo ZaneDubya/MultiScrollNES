@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Core.GUI.Content;
+﻿using Core.GUI.Content;
 using Core.GUI.Framework;
 
 namespace eightbit.GUI.Screens

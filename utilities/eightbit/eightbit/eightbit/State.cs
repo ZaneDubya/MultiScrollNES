@@ -1,9 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
 
 namespace eightbit
 {
@@ -54,6 +51,7 @@ namespace eightbit
         }
 
         private static Dictionary<int, Galezie.Gfxbank> m_Gfxbanks;
+
         public static Galezie.Gfxbank GfxPage(int index)
         {
             if (index < 0 || index >= Data.TileGfx.PageCount)
@@ -68,14 +66,11 @@ namespace eightbit
             }
             return m_Gfxbanks[index];
         }
+
         public static void InvalidateGfxPages()
         {
             if (m_Gfxbanks != null)
                 m_Gfxbanks.Clear();
-        }
-        public static Galezie.Gfxbank SprPage()
-        {
-            return GfxPage(1);
         }
 
         public static bool LoadData()

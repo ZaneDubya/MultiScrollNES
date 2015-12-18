@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using Core.GUI.Content;
+﻿using Core.GUI.Content;
 using Core.GUI.Framework;
 using Core.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
 namespace eightbit.GUI.Screens
 {

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Core.GUI.Framework;
 using System.Collections.Generic;
+using eightbit.Data.TileSetData;
 
 namespace eightbit.GUI.Elements.Renderers
 {
@@ -107,7 +108,7 @@ namespace eightbit.GUI.Elements.Renderers
                             int[] tilesums = new int[16];
                             for (int j = 0; j < 4; j++)
                             {
-                                Data.TilePageAttribute value = tileset.GetSubTile(metatile, j);
+                                TilePageAttribute value = tileset.GetSubTile(metatile, j);
                                 byte[] tile = gfx.GetTile(value.Page, value.Tile);
                                 for (int k = 0; k < 16; k++)
                                 {

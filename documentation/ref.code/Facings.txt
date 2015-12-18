@@ -1,0 +1,9 @@
+Facings in the game are four-directional:
+
+00 - UP
+01 - RIGHT
+10 - DOWN
+11 - LEFT
+
+These facings are used in sprite definitions (stand/move sprite indexes), actor
+data in ROM and in RAM, and are expected to be consistent throughout the program.

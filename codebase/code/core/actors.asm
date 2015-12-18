@@ -1,64 +1,230 @@
 ; ============================== [ Actors.asm ] ================================
 ; This code controls the actors that make the world alive.
-.scope
 
 ; -------------------------- [ Actors_DrawActors ] -----------------------------
 ; This routine will draw the actors that are currently visible on the screen.
 ; In:   None (reads data from active actor array and actor sort array).
 ; Out:  None
 ; Note: Takes about ~40% of a frame's cpu budget to draw 16 16x16 sprites.
-;       *** Possible optimization: don't save the _sprite values, simply
-;           pass 'x' register to Sprite_DrawSprite. Might save cycles, might
-;           lose them.
 Actors_DrawActors:
-.scope
-    .alias  _objdata_ptr                $00 ; ... $01 (temp)
-    .alias  _sprite_index               $06 ; (input for Sprite_DrawSprite)
-    .alias  _sprite_frame               $07 ; (input for Sprite_DrawSprite)
-    .alias  _sprite_x                   $08 ; (input for Sprite_DrawSprite)
-    .alias  _sprite_y                   $09 ; (input for Sprite_DrawSprite)
-    .alias  _sprite_superchunk          $0a ; (input for Sprite_DrawSprite)
-    .alias  _i                          $0c
-
-        ldx #$0f
-        stx _i
+{
+    .alias  _draw_addr                  $00
+    .alias  _actor_index                $02
+    .alias  _sprite_index               $03
+    .alias  _i                          $0f ; iterator - must not be overwritten by called routines.
+    
+    ; switch to bank containing metasprite data.
+    `Mapper_SwitchBank Bank_SprData
+    
+    ; The game has already sorted the 16 actors in the sort array. We check
+    ; every index of the sort array, and draw if one is present at that index.
+    ; Empty slots have bit 7 set (negative).
+    ldx #$0f                        ; for (x = $f; x >= 0; x--) {
+    stx _i
+    
     _draw_Actor:
-        ; make sure there's an Actor in this position of the sort array
-        ; if the position is empty, the index will be $80 (-128)
-        lda Actor_SortArray,x
-        bmi _next_Actor
-        ; draw Actor with index = _i
-        lda Actor_ObjPtr,x          ; get ptr to Object data for this Actor
-        sta [_objdata_ptr+0]        ;   |
-        lda Actor_ObjPtrHi,x        ;   |
-        sta [_objdata_ptr+1]        ;   +
-        ldy #$00                    ; get the SpriteIndex from the object data.
-        lda (_objdata_ptr),y        ;   |
-        sta _sprite_index           ;   +
-        lda Actor_Frame,x           ; get the current frame for this Actor
-        sta _sprite_frame           ;   +
-        lda Actor_SuperChunk,x      
-        sta _sprite_superchunk
-        lda Actor_Y,x
-        sta _sprite_x
-        lda Actor_X,x
-        sta _sprite_y
-        jsr Sprite_DrawSprite ; wipes out $00-$0b, no return values
+        lda Actor_SortArray,x           ; if (Actor_SortArray[x] < 0)
+        bmi _next_Actor                 ;   continue;
+        
+        tax                             ; x = actor index (to data in $0300)
+        lda Actor_Definition,x          ; a = actor definition index
+        stx _actor_index                ; _actor_index = x
+        tax                             ; x = a
+        lda ActorHeaderSprite,x         
+        sta _sprite_index               ; _sprite_index = a
+        lda ActorHeaderAnimatePtr,x     ; _draw_routine_addr = address of draw routine.
+        sta [_draw_addr+0]
+        lda ActorHeaderAnimatePtrHi,x
+        sta [_draw_addr+1]
+        
+        jsr _JSR_draw_addr_indirect     ; JSR (_draw_addr)
+    
     _next_Actor:
         ldx _i
         dex
         bmi _return
         stx _i
-        bpl _draw_Actor
+        bpl _draw_Actor             ; }
+    
     _return:
         rts
-.scend
+        
+    _JSR_draw_addr_indirect:
+        jmp (_draw_addr)
+}
+
+; ------------------------------------------------------------------------------
+; ActDrw_Std - An example actor drawing routine.
+; In:   $02 = index of actor being drawn.
+;       $03 = index of sprite being drawn.
+; Ret:  None.
+; Note: Must preserve $0f
+ActDrw_Std:
+{
+    .alias  _ptr_metasprite             $00 ; ... $01        
+    .alias  _actor_index                $02
+    .alias  _sprite_index               $03
+    .alias  _oam_byte1                  $04
+    .alias  _oam_byte2                  $05
+    .alias  _frame                      $06
+    .alias  _tiles_wh                   $07
+    .alias  _sprite_x                   $08
+    .alias  _sprite_y                   $09
+    .alias  _sprite_superchunk          $0a
+    .alias  _flag_world_space           $0b
+    
+    ldx _actor_index
+    lda Actor_DrawData0,x                   ; cccc ffpp, see Actor Data.txt
+    tay
+    and #$f0
+    sta _oam_byte1
+    tya
+    and #$03
+    sta _oam_byte2
+    lda Actor_DrawData1,x                   ; xeii iiii, see Actor Data.txt
+    and #$c0                                
+    bmi _draw_ExtraSprite
+    bne _draw_ExtendedSprite
+    
+    ; draw sprite based on facing, moving, and (if moving) determine whether to draw 
+    ; frame 0 or frame 1 of the moving animation; otherwise draw frame 0 (standing)
+    tya
+    and #$0c                                ; a = .... ff.. (facing bits)
+    lsr
+    sta _frame
+    lda Actor_Bitflags,x
+    and ActFlg_IsMoving
+    beq _draw_frame
+    lda FrameCount
+    and #$10 ; change sprite every 16 frames
+    beq _draw_frame
+    lda _frame
+    `add 1
+    sta _frame
+    ldx _sprite_index
+    jmp _draw_frame
+    
+_draw_ExtraSprite:
+    ; draw an extra sprite, based on index in Actor_DrawData1,x
+    lda Actor_DrawData1,x
+    and #$3f
+    tay                              ; y = index of extended sprite
+    ldx _sprite_index
+    lda SpriteHeaderData,x
+    bpl +
+    tya
+    `add 8
+    tay
+*   lda SpriteHeaderData,x
+    asl
+    bpl +
+    tya
+    `add 4
+    tay
+*   sty _frame
+    jmp _draw_frame
+
+_draw_ExtendedSprite:
+    ; draw an extended combat sprite, based on index in Actor_DrawData1,x
+    lda Actor_DrawData1,x
+    and #$3f
+    tay                              ; y = index of extended sprite
+    ldx _sprite_index
+    lda SpriteHeaderData,x
+    bpl +
+    tya
+    `add 8
+    tay
+*   sty _frame
+    
+_draw_frame:
+    ; x is _sprite_index, _frame is frame to draw. from these, get metasprite ptr
+    lda SpriteHeaderData,x
+    lsr
+    lsr
+    lsr
+    lsr
+    and #$03
+    sta _tiles_wh
+    beq _metasprite_8x8
+    cmp #$01
+    beq _metasprite_16x16
+    cmp #$02
+    beq _metasprite_24x24
+_metasprite_32x32: ; max 31 frames, shift left by 32b (5x), max of 1000+, need to carry into second byte.
+    lda _frame
+    lsr
+    lsr
+    lsr
+    sta [_ptr_metasprite+1]
+    lda _frame
+    ror
+    ror
+    ror
+    ror
+    and #$e0
+    jmp _add_meta_ptr
+_metasprite_24x24: ; 3x3 metasprites, each is 18b, add 16b + 2b per frame to offset.
+    lda _frame
+    lsr
+    lsr
+    lsr
+    lsr
+    sta [_ptr_metasprite+1]
+    lda _frame
+    asl
+    asl
+    asl
+    asl
+    sta [_ptr_metasprite+0]
+    lda _frame
+    asl
+    `add [_ptr_metasprite+0]
+    bcc +
+    inc [_ptr_metasprite+1]
+*   jmp _add_meta_ptr
+_metasprite_16x16:
+    lda #$00
+    sta [_ptr_metasprite+1]
+    lda _frame ; max 31 frames, shift left by 8b (3x) = max of 248, fits in one byte!
+    asl
+    asl
+    asl
+    jmp _add_meta_ptr
+_metasprite_8x8: ; max 31 frames, shift left by 2b (1x) = max of 62, fits in one byte!
+    lda #$00
+    sta [_ptr_metasprite+1]
+    lda _frame
+    asl
+_add_meta_ptr:
+    sta _ptr_metasprite
+    lda SpriteHeaderMetaPtrHi,x
+    `add [_ptr_metasprite+1]
+    sta [_ptr_metasprite+1]
+    lda SpriteHeaderMetaPtr,x
+    `add [_ptr_metasprite+0]
+    sta [_ptr_metasprite+0]
+    bcc +
+    inc [_ptr_metasprite+1]
+*   
+; get the x and y and superchunk values, set the world space flag, and draw!
+    ldx _actor_index
+    lda Actor_X,x
+    sta _sprite_x
+    lda Actor_Y,x
+    sta _sprite_y
+    lda Actor_SuperChunk,x
+    sta _sprite_superchunk
+    lda #$01
+    sta _flag_world_space
+    jmp Sprite_DrawMetaSprite
+}
 
 ; ----------------------------- [ Actors_Update ] ------------------------------
 ; In:   None (reads data from active actor array).
 ; Out:  None
 Actors_Update:
-.scope
+{
     .alias  _i                          $0c
     
     ldx #$0f                            ; x = $0f                
@@ -73,7 +239,7 @@ Actors_Update:
         bpl _update_Actor               ; goto _update_Actor
     _return:                            ; } else {
         rts                             ; return
-.scend                                  ; }
+}                                       ; }
 
 ; --------------------------- [ Actors_ClearActor ] ----------------------------
 ; In:   x = index of actor to clear
@@ -81,11 +247,12 @@ Actors_Update:
 ;       Sets all instances of this actor's index in the sort array to $80.
 ; Note: wipes out a, y.
 Actors_ClearActor:
-.scope
+{
     lda #$00
     sta Actor_Bitflags,x
     txa
     ldy #$0f
+    
     _check_sort_array:
         cmp Actor_SortArray,y
         bne _next
@@ -95,8 +262,7 @@ Actors_ClearActor:
         _next:
         dey
         bpl _check_sort_array
+    
     _return:
         rts
-.scend
-
-.scend
+}

@@ -1,0 +1,74 @@
+My goal is to create a minimal NES game using minimal hardware. If this goal
+succeeds, I will explore using more powerful hardware / larger ROMs.
+    * 64kb rom.
+    * MMC1 or Action 53 mapper.
+
+Mapper: 1 (MMC1)
+PRGROM: 0.5mbit / 64kb (4x16kb)
+PRGRAM: 8kb, battery backed
+CHRROM: n/a
+CHRRAM: 8kb
+
+PRG ROM BANKS
+$8000 - 16kb swappable
+	data and music
+$C000 - 16kb fixed
+    DPCM, SFX
+	Core engines
+
+$8000 - 16kb swappable
+	data and music
+$C000 -  16kb fixed
+	DPCM, SFX
+	Core engines
+
+00		Map, Sprite, Actor data
+		Map ptrs: 16 x 16 SC = 512b
+		Chunk/Actor/Egg data: ~13.5kb
+        Sprite Data: 1 kb
+        Actor Data: 1 kb
+01		Chunks, Gfx
+		Chunks: 128 (8kb) + however many are left after gfx are compressed.
+		Gfx:  512 tiles fits in 8kb. Can these be compresseD?
+			256: 208 are default tilest, 48 as charset
+			Charset: 26 + 10 numeral + 5 border = 41
+						+ 7 punctuation: :"$,.!? (space is tile 0)
+			256: sprite gfx
+02		Music (4 x 4kb?), SFX
+03		Core, DPCM (fixed at C000-FFFF)
+			Tileset: 1536b
+			
+
+Mapper: 28 (UxROM)
+PRGROM: .5 mbit / 64kb (4x16kb)
+PRGRAM: 0kb
+CHRROM: n/a
+CHRRAM: 8kb
+
+PRG ROM BANKS
+
+$8000 - 16kb swappable
+	data and music
+$C000 -  16kb fixed
+	DPCM, SFX
+	Core engines
+
+00		Map, Tileset, Script, Actor data
+		Map: 16 x 16 SC = 512b
+		Chunk/Actor/Egg data: ~13.5kb
+        Sprite Data: 1 kb
+        Actor Data: 1 kb
+01		Chunks, Gfx
+		Chunks: 128 (8kb) + however many are left after gfx are compressed.
+		Gfx:  512 tiles fits in 8kb. Can these be compresseD?
+			256: 208 are default tilest, 48 as charset
+			Charset: 26 + 10 numeral + 5 border = 41
+						+ 7 punctuation: :"$,.!? (space is tile 0)
+			256: sprite gfx
+02		Music (4 x 4kb?), SFX
+03		Core, DPCM (fixed at C000-FFFF)
+			Tileset: 1536b
+			
+
+			
+			

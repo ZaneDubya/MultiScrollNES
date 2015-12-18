@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Core.GUI.Framework;
 using Core.Input;
+using eightbit.Data.TileSetData;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Core.GUI.Framework;
+using System;
 
 namespace eightbit.GUI.Elements
 {
@@ -59,7 +60,7 @@ namespace eightbit.GUI.Elements
                 int tile = chunk[i];
                 for (int j = 0; j < 4; j++)
                 {
-                    Data.TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(tile, j);
+                    TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(tile, j);
                     SetTile(i, j, tile_page_attrib.Tile, State.GfxPage(tile_page_attrib.Page).Texture);
                     SetAttribute(i, tile_page_attrib.Attribute);
                 }

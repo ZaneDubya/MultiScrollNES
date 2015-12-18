@@ -1,5 +1,4 @@
-﻿using System;
-using Core.GUI.Content;
+﻿using Core.GUI.Content;
 using Core.GUI.Framework;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 

@@ -124,7 +124,7 @@ Debug_CreatePlayerActor:
     ldx #$00
     stx Player_ActorIndex
     stx Actor_SortArray
-    lda [ActFlg_IsDynamic|ActFlg_IsPlayer]
+    lda [ActFlg_IsDynamic]
     sta Actor_Bitflags,x
     lda #$80
     sta Actor_X,x

@@ -16,12 +16,15 @@
 .alias	MapData_HasRowData	$10
 .alias	MapData_HasRowAttr	$20
 
-; Actor bitflag enumerations
-.alias  ActFlg_IsInteractable   $01 ; 'a' interaction
-.alias  ActFlg_IsBlocking       $02 ; blocks movement
-.alias  ActFlg_IsRunning        $04 ; is instantiated
-.alias  ActFlg_IsPlayer         $20 ; is player actor
-.alias  ActFlg_IsDynamic        $40
+; Actor bitflag enumerations.
+; REFERENCE ref.data\Engines\Actor Data.txt 2.A
+.alias  ActFlg_IsActive         $01
+.alias  ActFlg_UNUSED           $02
+.alias  ActFlg_IsAction         $04
+.alias  ActFlg_IsMoving         $08
+.alias  ActFlg_IsDynamic        $10
+.alias  ActFlg_IsInteractable   $20
+.alias  ActFlg_IsBlocking       $40
 .alias  ActFlg_IsVisible        $80
 
 ; TextEngine Actions

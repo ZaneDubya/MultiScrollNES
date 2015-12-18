@@ -208,43 +208,50 @@ _return:
 .scend
 
 ; ========================[ MapService_CopyRowColData ]=========================
+; Copies row and column tiles to the PPU during VBLANK.
+; Cycles:   27 if no data to copy.
+;           26+479=505 if copying a column.
+;           26+449=475 if copying a row.
+;           25+479+449=953 if copying both column and row.
 MapService_CopyRowColData:
-.scope
-_checkRow:
-	`CheckMapDataFlag MapData_HasRowData
-	beq _checkColumn
-	
-	lda MapBuffer_R_PPUADDR
-	sta PPU_ADDR
-	lda MapBuffer_R_PPUADDR+1
-	sta PPU_ADDR
-	`SetByte PPU_CTRL, $88
-	ldx #0
-*	lda MapData_RowBuffer,x
-	sta PPU_DATA
-	inx
-	cpx #$20
-	bne -
-_checkColumn:
-	`CheckMapDataFlag MapData_HasColData
-	beq _return
-	
-	lda MapBuffer_C_PPUADDR
-	sta PPU_ADDR
-	lda MapBuffer_C_PPUADDR+1
-	sta PPU_ADDR
-	`SetByte PPU_CTRL, $8C
-	ldx #0
-*	lda MapData_ColBuffer,x
-	sta PPU_DATA
-	inx
-	cpx #$1e
-	bne -
-_return:
-	lda #$00
-	sta MapBuffer_Flags
-	rts
-.scend
+{
+    _checkRow:                                          ; Cycles
+        `CheckMapDataFlag MapData_HasRowData            ; 5    
+        beq _checkColumn                                ; 3 if none, 2 otherwise
+        
+        lda MapBuffer_R_PPUADDR                         ; 16        (323 total)   
+        sta PPU_ADDR
+        lda MapBuffer_R_PPUADDR+1
+        sta PPU_ADDR
+        `SetByte PPU_CTRL, $88                          ; 6
+        ldx #0                                          ; 2    
+    *	lda MapData_RowBuffer,x                         ; 4         (479 total)
+        sta PPU_DATA                                    ; 4             |    
+        inx                                             ; 2             |
+        cpx #$20                                        ; 2             |
+        bne -                                           ; 3 (2)         +
+    
+    _checkColumn:
+        `CheckMapDataFlag MapData_HasColData            ; 5
+        beq _return                                     ; 3 if none, 2 otherwise
+        
+        lda MapBuffer_C_PPUADDR                         ; 16    
+        sta PPU_ADDR
+        lda MapBuffer_C_PPUADDR+1
+        sta PPU_ADDR
+        `SetByte PPU_CTRL, $8C                          ; 6         (449 total)
+        ldx #0                                          ; 2
+    *	lda MapData_ColBuffer,x                         ; 4
+        sta PPU_DATA                                    ; 4
+        inx                                             ; 2
+        cpx #$1e                                        ; 2    
+        bne -                                           ; 3 (2)
+    
+    _return:
+        lda #$00                                        ; 5
+        sta MapBuffer_Flags
+        rts                                             ; 6
+}
 
 ; ========================[ MapService_UpdateScroll ]===========================
 ; 1. Bounds target.

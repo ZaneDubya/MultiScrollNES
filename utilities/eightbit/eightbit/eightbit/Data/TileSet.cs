@@ -1,7 +1,6 @@
-﻿using System;
+﻿using eightbit.Data.TileSetData;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace eightbit.Data
 {
@@ -354,43 +353,6 @@ namespace eightbit.Data
             public void AddIndexTilePage(int index, byte tile, byte page)
             {
                 m_Tiles.Add(new Tuple<int, TilePage>(index, new TilePage(tile, page)));
-            }
-        }
-    }
-
-    public struct TilePageAttribute
-    {
-        public readonly byte Tile, Page, Attribute;
-        public TilePageAttribute(byte t, byte p, byte a)
-        {
-            Tile = t;
-            Page = p;
-            Attribute = a;
-        }
-
-        public static TilePageAttribute Zero
-        {
-            get
-            {
-                return new TilePageAttribute(0, 0, 0);
-            }
-        }
-    }
-
-    public struct TilePage
-    {
-        public readonly byte Tile, Page;
-        public TilePage(byte t, byte p)
-        {
-            Tile = t;
-            Page = p;
-        }
-
-        public static TilePage Zero
-        {
-            get
-            {
-                return new TilePage(0, 0);
             }
         }
     }

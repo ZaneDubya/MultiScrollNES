@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using eightbit.Data.TileSetData;
 
 namespace eightbit.Data
 {
@@ -129,6 +130,8 @@ namespace eightbit.Data
             m_Sprites.Export(headers, data);
             headers.Close();
             data.Close();
+
+            System.Windows.Forms.MessageBox.Show("Export to " + directory);
         }
 
         public Palettes Palettes

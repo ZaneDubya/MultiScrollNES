@@ -19,22 +19,29 @@ eightbit utility. An actor has scripts for interaction, drawing, combat, etc.
 
 ------------------------[ 1.A. Actor Type Definitions ]-------------------------
 Object data definition, 8b each (32 per 256b)
+    1b Sprite data
+            7654 3210
+            .... .sss
+            s = speed (pixels per frame)
     1b Sprite Definition Index
-    1b Initial Sprite Frame
-    1b Initial Bitflag
-        VBID ....
-        V - Visible (has sprite) (both this and the Actor List bitflag V must be
-            set for the sprite to be visible!)
-        B - Blocking
-        I - Interactable (displays 'A' button when close, has interact script)
-        D - is a dynamic actor (has main script, ticks)
-    1b Combat data definition index ($ff = no script)
+    2b Pointer to animate script ($0000 = no script, not visible)
     2b Pointer to interaction script ($0000 = no script)
     2b Pointer to dynamic script header ($0000 = no script)
         Format for pointers is BBpppppp pppppppp
             B - bank offset (0-3) from global scripts bank.
             p - pointer inside specified bank.
                 (points to to %10pppppp pppppppp, $8000 - $bfff)
+                
+    Initial flags on boot:
+        V - Visible (has sprite) = 1
+        B - Blocking = 1
+        I - Interactable (shows 'A' button when near, has interact script) = 0
+        D - is a dynamic actor (has main script, ticks) = 1 if ptr is not $0000
+        M - is accelerating = 0
+        C - aCtion - running action = 0
+        P - 'Pause' - if dynamic, do not tick scripts on this actor = 0
+        A - Active; has been instantiated. (if 0, empty actor slot) = 1
+        
     
 ---------------------[ 1.B. Actor Combat Data Definitions ]---------------------
 Not yet implemented.
@@ -95,24 +102,32 @@ Actor data array in active memory (16 x 16b actors 'alive', 256b total)
   
     $0x00   Actor_Bitflags
             7654 3210
-            VBID .APR
+            VBID MC.A
             V - Visible (has sprite)
             B - Blocking
             I - Interactable (shows 'A' button when near, has interact script)
             D - is a dynamic actor (has main script, ticks)
-            
-            A - Action - running action.
-            P - 'Pause' - if dynamic, do not tick scripts on this actor.
-            R - Running; has been instantiated. (if 0, empty actor slot).
+            M - is moving.
+            C - aCtion - running action.
+            A - Active; has been instantiated. (if 0, empty actor slot).
             
     $0x10   Actor_X - X pixel position in superchunk
     $0x20   Actor_Y - Y pixel position in superchunk
-    $0x30   Actor_SuperChunk - Superchunk this actor is located within
-    $0x40   DrawFlags - Palette, Direction, DirectionLast
-    $0x50   FirstSpriteIndex
-    $0x60   MovementSpeed (YXyyyxxx)
-    $0x70   ActorType (0-255)
-            2-byte unique identifier for this actor.
+    $0x30   Actor_SuperChunk - Superchunk this actor is located within.
+            Wraps at 15.
+    $0x40   Actor_DrawData0
+            7654 3210
+            cccc ffpp
+            p = palette (4-7)
+            f = facing.
+            c = chrram tile index for first tile.
+    $0x50   Actor_DrawData1
+            xeii iiii
+            x = draw extra sprite with index i
+            e = draw extended sprite with index i
+    $0x60   UNUSED
+    $0x70   Actor_Type (0-255)
+            Index into Actor Definitions.
     $0x80   Actor_ScriptPtr & Actor_ScriptPtrHi
             2-byte pointer to current executing script
     $0xA0   Actor_Var0 - Actor_Var5

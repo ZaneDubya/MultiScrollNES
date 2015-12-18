@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Core.GUI.Framework;
 using Core.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Core.GUI.Framework;
+using System;
 
 namespace eightbit.GUI.Elements
 {
@@ -69,11 +69,11 @@ namespace eightbit.GUI.Elements
             return new Tuple<byte, Texture2D, bool, bool>(m_Tiles[index], m_Textures[index], m_FlipH[index], m_FlipV[index]);
         }
 
-        public void SetTile(int index, byte value, Texture2D texture)
+        public void SetTile(int index, byte tile, Texture2D texture)
         {
             if (index < 0 || index >= m_TilesWidth * m_TilesHeight)
                 return;
-            m_Tiles[index] = value;
+            m_Tiles[index] = tile;
             m_Textures[index] = texture;
         }
 

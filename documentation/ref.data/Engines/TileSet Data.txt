@@ -1,0 +1,32 @@
+Description of TileSet
+Last updated 07/09/14
+
+TileSet banks (4 TileSets per bank, 800 left over)
+* Updated 01/02/13
+	Tileset header: 2b pointers.
+	
+	Each tileset is 1848b, organized as follows:
+	255 MetaTile bitfields
+	1b pal index zero
+	255 MetaTile attributes
+	1b palette 0
+	255 MetaTile graphics UL
+	1b palette 1
+	255 MetaTile graphics UR
+	1b palette 2
+	255 MetaTile graphics LL
+	1b palette 3
+	255 MetaTile graphics LR
+	byte tilecount, always 208
+	tilecount b tiles low bytes.
+	tilecount / 2 b tiles hi byte
+		-	(lo nibble is for $0 index, hi nibble is for $1 index)
+		-	Tile graphic index is a 12 bit number, 0-4095
+	200 free bytes follow each tileset.
+
+Tile gfx banks (up to 4 16-kb banks)
+    4 x 256 x 16 byte tiles each
+
+Chunk banks (up to 4 16-kb banks)
+    256 x 64 byte chunks each
+

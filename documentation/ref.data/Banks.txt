@@ -1,69 +1,35 @@
-Mapper: 28 (UxROM)
-PRGROM: .5 mbit / 64kbyte (4x16kb)
-PRGRAM: 0kb
-CHRROM: n/a
-CHRRAM: 8kb
+My goal is to create a minimal NES game using minimal hardware. If this goal
+succeeds, I will explore using more powerful hardware / larger ROMs.
+    * 64kb rom.
+    * MMC1 or Action 53 mapper.
 
-PRG ROM BANKS
-
-$8000 - 16kb swappable
-	data and music
-$C000 -  16kb fixed
-	DPCM, SFX
-	Core engines
-
-00		Map, Tileset, Script, Actor data
-		Map: 16 x 16 SC = 512b
-		Chunk/Actor/Egg data: ~13.5kb
-        Sprite Data: 1 kb
-        Actor Data: 1 kb
-01		Chunks, Gfx
-		Chunks: 128 (8kb) + however many are left after gfx are compressed.
-		Gfx:  512 tiles fits in 8kb. Can these be compresseD?
-			256: 208 are default tilest, 48 as charset
-			Charset: 26 + 10 numeral + 5 border = 41
-						+ 7 punctuation: :"$,.!? (space is tile 0)
-			256: sprite gfx
-02		Music (4 x 4kb?), SFX
-03		Core, DPCM (fixed at C000-FFFF)
-			Tileset: 1536b
-			
-
-			
-			
-Mapper: 5 (MMC3)
-PRGROM: 4mbit / 512kbyte (64x8kb)
+Mapper: 1 (MMC1)
+PRGROM: 0.5mbit / 64kb (4x16kb)
 PRGRAM: 8kb, battery backed
 CHRROM: n/a
 CHRRAM: 8kb
 
-PRG ROM BANKS
-$8000 - fixed, engines
-$A000 - swappable
-	used for data loading between scenes
-	additional engines and data go here
-	needed for music once a frame
-$C000 - swappable/fixed
-	used for data loading between scenes
-	fixed for DPCM during play
-$E000 - fixed
-	Main engine.
-	Sound engine.
+8000 - 16kb swappable bank, used for data, graphics, music, and engine code.
+C000 - 16kb fixed bank, used for DPCM, data headers, and core code.
 
-Maximum of 64 banks.
-At present, keeping it in 16.
+BANK    ADDR    SIZE    DESCRIPTION
+00      8000     200    Map pointers: 16 x 16 x 2b superchunk pointers.
+        8200    1E00    Map chunk data: actors and egg scripts.
+        A000    1000    Sprite data
+        B000    1000    Actor scripts
 
-00-03:	Superchunk data banks.
-		At a minimum, a sc is 8 bytes
-04:		Chunk bank 0
-05:		TileSet bank 0
-06:		TileGfx bank 0
-07:		Blank (demo data)
-08:		CharCpyr bank
-09:		FF6 script bank 0
-10:		Main Map Poimter Bank
-11:		Song0			
-12:		Song1
-13:		DPCM
-14: 	Core 1 (8000)
-15: 	Core 0 (E000)
+01      8000    2000    Chunks
+        A000    1000    TileGfx Page 0 (256 tiles)
+        B000    1000    TileGfx Page 1 (256 tiles)
+        
+02      8000    2000    Famitone Song 0
+        A000    2000    Famitone Song 1
+
+03      C000    1000    DPCM reserved space (4kb)
+        D000     800    SFX reserved space (2kb)    
+        D800     600    Tileset 00 - this will go in a 'tileset' bank.
+        DE00      80    Sprite Headers (4b ea, 32 total).
+        DE80      80    Actor Headers (8b ea, 16 total).
+        DF00      20    Map Headers (4b ea, 8 total).
+        DF20      E0    Palettes (224b, 3b ea, 74 total + 2b)
+        E000    2000    Core Engine Code

@@ -1,7 +1,7 @@
-﻿using Core.Input;
+﻿using Core.GUI.Framework;
+using Core.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Core.GUI.Framework;
 
 namespace eightbit.GUI.Elements
 {

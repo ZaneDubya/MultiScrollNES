@@ -194,7 +194,8 @@
 	adc _1
 .macend
 
-.macro sub
+; SUB: subtracts the implicit constant value from A. 4 cycles.
+.macro sub 
 	sec	
 	sbc #_1
 .macend
