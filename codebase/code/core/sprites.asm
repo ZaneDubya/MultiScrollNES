@@ -153,7 +153,7 @@ Sprite_DrawMetaSprite:
         
         ; oam byte 1 - tile
         lda (_ptr_metasprite),y
-        `add _oam_byte1
+        `addm _oam_byte1
         sta $0201,x
         iny
         

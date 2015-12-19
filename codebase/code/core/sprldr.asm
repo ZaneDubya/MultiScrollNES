@@ -9,12 +9,12 @@ SprLdr_Setup:
 ; ==============================================================================
 ; SprLdr_AllocTiles - allocates a section of CHRRAM for an actor's sprite tiles.
 ; IN    x = the actor index that needs tiles loaded.
-; OUT   1.  sets the upper 4 bits of the input actor's Actor_DrawData0 byte to
-;           first allocated tile in CHRRAM.
-;       2.  finds a free tile slot or a tile slot that already holds the
+; OUT   1.  finds a free tile slot or a tile slot that already holds the
 ;           requested sprite index, and increments the use count for that slot.
-;       3.  if the slot is newly allocated, then sets the $80 bit in the use
+;       2.  if the slot is newly allocated, then sets the $80 bit in the use
 ;           count.
+;       3.  sets the upper 4 bits of the input actor's Actor_DrawData0 byte to
+;           first allocated tile in CHRRAM.
 ; NOTE  Wipes out $00-$03, a, y. Preserves x.
 SprLdr_AllocTiles:
 {
@@ -36,13 +36,23 @@ SprLdr_AllocTiles:
         cmp _spriteIndex
         bne _next
             ; this sprite index matches the one we're looking for... but it's
-            ; only valid if it's in use. Check that.
+            ; only valid if it's in use. So we check that.
             tax 
             lda SprLdr_UsageCounts,y
             beq _next
             inc SprLdr_UsageCounts,x
-            ldx _actorIndex
-            rts
+            ldx _actorIndex             ; restore x    
+            lda #$0f                    ; set Actor_DrawData0 chrram tile
+            and Actor_DrawData0,x
+            sta Actor_DrawData0,x
+            tya
+            asl
+            asl
+            asl
+            asl
+            ora Actor_DrawData0,x
+            sta Actor_DrawData0,x
+            rts                         ; and return!
         _next:
         dey
         bpl _check_next_slot
@@ -111,8 +121,18 @@ SprLdr_AllocTiles:
     ora SprLdr_UsageCounts,x
     sta SprLdr_UsageCounts,x
     
-    ldx _actorIndex
-    rts
+    ldx _actorIndex                 ; restore x    
+    lda #$0f                        ; set Actor_DrawData0 chrram tile
+    and Actor_DrawData0,x
+    sta Actor_DrawData0,x
+    lda _emptySlot
+    asl
+    asl
+    asl
+    asl
+    ora Actor_DrawData0,x
+    sta Actor_DrawData0,x
+    rts                             ; and return!
 }
    
 ; ==============================================================================

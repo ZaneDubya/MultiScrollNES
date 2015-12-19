@@ -4,14 +4,14 @@ Debug_LoadCHRRAM:
     .alias	_SpriteGfxRom	$B000		; Location of tilegfx in tilegfx bank.
     .alias	_TileGfxRom		$A000		; Location of tilegfx in tilegfx bank.
     
-	; copy all 512 tiles in the bg graphic set to chrram.
+	; copy all 256 tiles in the background tile graphic page to chrram.
 	`Mapper_SwitchBank Bank_TilGfxData
 	`SetPointer _GfxPtr, _TileGfxRom	        ; set the pointer to the tile gfx data.
 	`SetPPUAddress $0000				        ; set PPU Address to CHR 0 ($0000)
 	jsr _CopyGfxBank
-	`SetPointer _GfxPtr, _SpriteGfxRom	        ; set the pointer to the tile gfx data.
-	`SetPPUAddress $1000				        ; set PPU Address to CHR 0 ($0000)
-	jsr _CopyGfxBank
+	;`SetPointer _GfxPtr, _SpriteGfxRom	        ; set the pointer to the tile gfx data.
+	;`SetPPUAddress $1000				        ; set PPU Address to CHR 0 ($0000)
+	;jsr _CopyGfxBank
     rts
 	
 _CopyGfxBank:
