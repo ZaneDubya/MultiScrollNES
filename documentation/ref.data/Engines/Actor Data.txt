@@ -122,11 +122,11 @@ Actor data array in active memory (16 x 16b actors 'alive', 256b total)
             f = facing.
             c = chrram tile index for first tile.
     $0x50   Actor_DrawData1
-            xeii iiii
-            x = draw extra sprite with index i
-            e = draw extended sprite with index i
+            this depends on the actor. For 'combat' actors, it is:
+            m..i iiii
+            m = draw movement sprite, otherwise draw sprite with index i
     $0x60   UNUSED
-    $0x70   Actor_Type (0-255)
+    $0x70   Actor_Definition (0-255)
             Index into Actor Definitions.
     $0x80   Actor_ScriptPtr & Actor_ScriptPtrHi
             2-byte pointer to current executing script

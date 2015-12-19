@@ -1,8 +1,8 @@
 Debug_LoadCHRRAM:
 .scope
     .alias	_GfxPtr			$00
-    .alias	_SpriteGfxRom	$A000		; Location of tilegfx in tilegfx bank.
-    .alias	_TileGfxRom		$B000		; Location of tilegfx in tilegfx bank.
+    .alias	_SpriteGfxRom	$B000		; Location of tilegfx in tilegfx bank.
+    .alias	_TileGfxRom		$A000		; Location of tilegfx in tilegfx bank.
     
 	; copy all 512 tiles in the bg graphic set to chrram.
 	`Mapper_SwitchBank Bank_TilGfxData
@@ -132,5 +132,7 @@ Debug_CreatePlayerActor:
     sta Actor_Y,x
     lda #$00
     sta Actor_SuperChunk,x
-    
+    lda #$00
+    sta Actor_Definition,x
+    jsr SprLdr_AllocTiles
     rts

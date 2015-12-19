@@ -8,13 +8,8 @@ Sprite data in ROM (4b header) x 128/256
     
     1b Sprite Data
         7654 3210
-        wx.. .fff
-            f = count of extra frames (2/8/18/32 bytes each)
-                Range: 0-7
-                Value: 0, 1, 2, 3, 4, 8, 16, 16*
-                       *values > 16 not allowed.
-            w = Has standard 8 walk/stand metasprites
-            x = Has 4 extended combat metasprites
+        .... ffff
+        f = count of frames, 1-32
     
     1b Tile Data
         7654 3210

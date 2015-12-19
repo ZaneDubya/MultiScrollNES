@@ -81,11 +81,16 @@ ActDrw_Std:
     tya
     and #$03
     sta _oam_byte2
-    lda Actor_DrawData1,x                   ; xeii iiii, see Actor Data.txt
-    and #$c0                                
-    bmi _draw_ExtraSprite
-    bne _draw_ExtendedSprite
+    lda Actor_DrawData1,x                   ; m..i iiii, see Actor Data.txt
+    bmi _Draw_MovementSprite
+
+_Draw_IndexedSprite:
+    ; draw a sprite with index in lower 5 bytes of a.
+    and #$1f
+    sta _frame
+    jmp _draw_frame
     
+_Draw_MovementSprite:
     ; draw sprite based on facing, moving, and (if moving) determine whether to draw 
     ; frame 0 or frame 1 of the moving animation; otherwise draw frame 0 (standing)
     tya
@@ -102,40 +107,6 @@ ActDrw_Std:
     `add 1
     sta _frame
     ldx _sprite_index
-    jmp _draw_frame
-    
-_draw_ExtraSprite:
-    ; draw an extra sprite, based on index in Actor_DrawData1,x
-    lda Actor_DrawData1,x
-    and #$3f
-    tay                              ; y = index of extended sprite
-    ldx _sprite_index
-    lda SpriteHdrs_Data,x
-    bpl +
-    tya
-    `add 8
-    tay
-*   lda SpriteHdrs_Data,x
-    asl
-    bpl +
-    tya
-    `add 4
-    tay
-*   sty _frame
-    jmp _draw_frame
-
-_draw_ExtendedSprite:
-    ; draw an extended combat sprite, based on index in Actor_DrawData1,x
-    lda Actor_DrawData1,x
-    and #$3f
-    tay                              ; y = index of extended sprite
-    ldx _sprite_index
-    lda SpriteHdrs_Data,x
-    bpl +
-    tya
-    `add 8
-    tay
-*   sty _frame
     
 _draw_frame:
     ; x is _sprite_index, _frame is frame to draw. from these, get metasprite ptr

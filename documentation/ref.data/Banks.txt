@@ -19,8 +19,8 @@ BANK    ADDR    SIZE    DESCRIPTION
         B000    1000    Actor scripts
 
 01      8000    2000    Chunks
-        A000    1000    TileGfx Page 0 (256 tiles)
-        B000    1000    TileGfx Page 1 (256 tiles)
+        A000    1000    TileGfx Page 0 (256 tiles) * NOTE - if moving this data, must also change TileGfxAddressHi.
+        B000    1000    TileGfx Page 1 (256 tiles) * NOTE2 - expanding to more than 4 pages will require edit to SprLdr_Update and map tileset loading algorithms.
         
 02      8000    2000    Famitone Song 0
         A000    2000    Famitone Song 1

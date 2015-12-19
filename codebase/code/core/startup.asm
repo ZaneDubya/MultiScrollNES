@@ -42,10 +42,13 @@ Reset:
     ; Load CHRRAM
     jsr Debug_LoadCHRRAM
     
+    ; Set up sprite loader
+    jsr SprLdr_Setup
+    
     jsr Debug_LoadMap
     jsr Debug_InitSprites
     jsr Debug_ClearAllActors
-    jsr Debug_SpriteDisplay
+    ;jsr Debug_SpriteDisplay
     jsr Debug_CreatePlayerActor
 	
     ; Set GameMode, turn on NMI.

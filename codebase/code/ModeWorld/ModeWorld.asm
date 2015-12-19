@@ -4,18 +4,11 @@
 ;	ModeWorld: handles controls, etc, for world.
 ModeWorld:
 {
-    jsr World_CheckScroll ; debug - scroll on dpad
+    jsr World_CheckScroll               ; debug - scroll on dpad
     jsr World_CheckController
-    ; Move the Camera
-    jsr MapService_UpdateCamera
-    ;lda CameraCurrentX
-    ;sta Scroll_X
-    ;lda CameraCurrentX2
-    ;sta Scroll_X2
-    ;lda CameraCurrentY
-    ;sta Scroll_Y
-    ;lda CameraCurrentY2
-    ;sta Scroll_Y2
+    
+    jsr MapService_UpdateCamera         ; Move the Camera
+    jsr SprLdr_Update                   ; update Sprite Loader data.
     
     rts
 }

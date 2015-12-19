@@ -14,7 +14,13 @@ namespace eightbit.Data.SpriteData
         private byte m_Data;
         private byte m_Tile;
 
-        public byte DataByte { get { return m_Data; } }
+        public byte DataByte
+        {
+            get
+            {
+                return (byte)(FrameCount - 1);
+            }
+        }
         public byte TileByte { get { return m_Tile; } }
 
         private SpriteMetaTileFrame[][] m_StandardFrames = null, m_ExtendedFrames = null, m_ExtraFrames = null;

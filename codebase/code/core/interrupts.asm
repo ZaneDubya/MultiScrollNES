@@ -23,8 +23,15 @@ NMI:
 *    
     lda MapBuffer_Flags						; Check for map data to be copied   ; 6 if no data to copy.
     beq +                                                                       ; 958 if copying both R & C data.
-    jsr MapService_CopyRowColData           ; max 953 cycles.                    
+    jsr MapService_CopyRowColData           ; max 953 cycles. 
+    clc
+    bcc _updateScrollRegisters
 *	
+    lda SprLdr_LoadOpReady
+    beq +
+    jsr SprLdr_LoadNMI                      ; ~1650 cycles.
+*
+_updateScrollRegisters:
     ; dec x scroll by 8 (hides tile change artifact on right side of screen)    ; (57 Total)
     lda CameraCurrentX                                                          ; 3     |
     `sub $08                                                                    ; 4     |

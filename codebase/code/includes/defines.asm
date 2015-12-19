@@ -96,10 +96,13 @@
                                     ; highest y value should be in highest slot
 
 ; $00Ex - Sprite Loader Library.
-.alias  SprLdr_LoadThisSlot    $00E0 ; current slot being loaded.
-.alias  SprLdr_LoadThisTile    $00E1 ; current tile in slot being loaded (0-63)
-.alias  SprLdr_NMIAddress      $00E2 ; address used to load tiles from in NMI
-.alias  SprLdr_NMIAddressHi    $00E3 ; ""
+.alias  SprLdr_NMIAddress       $00E0 ; address to load data to in NMI.
+.alias  SprLdr_NMIAddressHi     $00E1 ; 
+.alias  SprLdr_LoadThisSlot     $00E2 ; current slot being loaded
+.alias  SprLdr_LoadThisTile     $00E3 ; next tile to load (0,8,16,24,32,48,etc.)
+.alias  SplLdr_TilesToLoad      $00E4 ; max tile to load (16,32,48,or 64)
+.alias  SprLdr_LoadOpReady      $00E5 ; 1 if ready to load tiles, 0 if not.
+
 
                                     
 ; $00Fx - Flags and save data. AVAILABLE: $F4 - $FF (12)
@@ -136,6 +139,8 @@
 ; $04xx - Sprite Loader Library
 .alias  SprLdr_SpriteIndexes    $0400
 .alias  SprLdr_UsageCounts      $0410 
+.alias  SprLdr_TileAddressesLo  $0420
+.alias  SprLdr_TileAddressesHi  $0428
 
 ; $05xx - AVAILABLE.
 

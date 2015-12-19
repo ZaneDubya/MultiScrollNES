@@ -14,3 +14,5 @@
 
 .alias	MusicDataSet0		$8000		; these come from PRG/audio.asm
 .alias	MusicDataSet1		$a000		; these come from PRG/audio.asm
+
+.alias  TileGfxAddressHi    $a0
