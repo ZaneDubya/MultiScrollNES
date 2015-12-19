@@ -35,7 +35,7 @@
 .alias	FT_TEMP			  	$00		;3 bytes in zeropage used as a scratchpad
 .alias	FT_SFX_STREAMS		4		;# sound effects played at once, 4 or less
 ;internal defines
-.alias	FT_DPCM_DATA		$C600
+.alias	FT_DPCM_DATA		$C000
 .alias	FT_DPCM_PTR		  	[FT_DPCM_DATA & $3fff]/64
 
 ; PPU ops - usually found in VBLANK_OpData

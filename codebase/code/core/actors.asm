@@ -110,12 +110,12 @@ _draw_ExtraSprite:
     and #$3f
     tay                              ; y = index of extended sprite
     ldx _sprite_index
-    lda SpriteHeaderData,x
+    lda SpriteHdrs_Data,x
     bpl +
     tya
     `add 8
     tay
-*   lda SpriteHeaderData,x
+*   lda SpriteHdrs_Data,x
     asl
     bpl +
     tya
@@ -130,7 +130,7 @@ _draw_ExtendedSprite:
     and #$3f
     tay                              ; y = index of extended sprite
     ldx _sprite_index
-    lda SpriteHeaderData,x
+    lda SpriteHdrs_Data,x
     bpl +
     tya
     `add 8
@@ -139,13 +139,12 @@ _draw_ExtendedSprite:
     
 _draw_frame:
     ; x is _sprite_index, _frame is frame to draw. from these, get metasprite ptr
-    lda SpriteHeaderData,x
-    lsr
-    lsr
-    lsr
-    lsr
-    and #$03
-    sta _tiles_wh
+    ; first get the metasprite size (and use this value to set _tiles_wh)
+    lda SpriteHdrs_Tile,x               ; a = [SpriteHdrs_Tile+x]
+    and #$03                            ; _tiles_wh = a + 1
+    `add 1                              ; |
+    sta _tiles_wh                       ; |
+    `sub 1                              ; +
     beq _metasprite_8x8
     cmp #$01
     beq _metasprite_16x16
@@ -179,7 +178,7 @@ _metasprite_24x24: ; 3x3 metasprites, each is 18b, add 16b + 2b per frame to off
     sta [_ptr_metasprite+0]
     lda _frame
     asl
-    `add [_ptr_metasprite+0]
+    `addm [_ptr_metasprite+0]
     bcc +
     inc [_ptr_metasprite+1]
 *   jmp _add_meta_ptr
@@ -198,11 +197,11 @@ _metasprite_8x8: ; max 31 frames, shift left by 2b (1x) = max of 62, fits in one
     asl
 _add_meta_ptr:
     sta _ptr_metasprite
-    lda SpriteHeaderMetaPtrHi,x
-    `add [_ptr_metasprite+1]
+    lda SpriteHdrs_AddressHi,x
+    `addm [_ptr_metasprite+1]
     sta [_ptr_metasprite+1]
-    lda SpriteHeaderMetaPtr,x
-    `add [_ptr_metasprite+0]
+    lda SpriteHdrs_Address,x
+    `addm [_ptr_metasprite+0]
     sta [_ptr_metasprite+0]
     bcc +
     inc [_ptr_metasprite+1]

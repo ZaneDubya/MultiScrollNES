@@ -20,7 +20,7 @@ TilesetData:
     
 ; DE00      80    Sprite Headers (4b ea, 32 total).
 SpriteHeaders:
-	.incbin "data/gfx/spr_hdrs.dat"
+	.include "data/gfx/spr_hdrs.asm"
     .advance origin+$1E80,$00
     
 ; DE80      80    Actor Headers (8b ea, 16 total).

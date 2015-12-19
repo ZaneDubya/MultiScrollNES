@@ -6,10 +6,10 @@ Sprite drawing touches five kinds of data:
     Which frame of an Actor's Sprite should be drawn (determined by SpritePlacer, based on Actor data in RAM).
 
 SpriteLoader CHRRAM Allocation:
-  * SpriteLoader allocates CHRRAM in 'slots' of tiles. There are 13 slots of
-    16 tiles each (for actor main frames), and 48 tiles left over for
+  * SpriteLoader allocates CHRRAM in 'slots' of tiles. There are 14 slots of
+    16 tiles each (for actor main frames), and 32 tiles left over for
     effects/menu sprites.
-  * At most there can be 13 graphically unique actors loaded at any given time
+  * At most there can be 14 graphically unique actors loaded at any given time
     (a second limitation is the number of palettes available: 4).
   * An actor can request multiple slots (bigger sprites, bosses?), but this
     reduces the number of possible graphically unique actors. Multiple slot

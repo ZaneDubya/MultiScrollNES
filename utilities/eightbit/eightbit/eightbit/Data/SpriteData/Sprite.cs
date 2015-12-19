@@ -8,10 +8,15 @@ namespace eightbit.Data.SpriteData
         public Sprite()
         {
             m_Data = 0x00;
+            m_Tile = 0x00;
         }
 
-        private byte m_Data = 0x00;
+        private byte m_Data;
+        private byte m_Tile;
+
         public byte DataByte { get { return m_Data; } }
+        public byte TileByte { get { return m_Tile; } }
+
         private SpriteMetaTileFrame[][] m_StandardFrames = null, m_ExtendedFrames = null, m_ExtraFrames = null;
 
         // ================================================================================
@@ -91,11 +96,11 @@ namespace eightbit.Data.SpriteData
         {
             get
             {
-                return (SpriteSizeEnum)((m_Data & 0xC0) >> 6);
+                return (SpriteSizeEnum)(m_Tile & 0x03);
             }
             set
             {
-                m_Data = (byte)((m_Data & 0x3F) + (((byte)(value) & 0x03) << 6));
+                m_Tile = (byte)((m_Tile & 0xFC) + (((byte)(value) & 0x03)));
                 updateFrameData();
             }
         }
@@ -121,7 +126,7 @@ namespace eightbit.Data.SpriteData
                     case ExtraFramesEnum.Extra16:
                         return 16;
                     case ExtraFramesEnum.Extra32:
-                        return 32;
+                        return 16;
                     default:
                         throw new Exception("Unhandled ExtraFramesInt value");
                 }
@@ -203,11 +208,11 @@ namespace eightbit.Data.SpriteData
         {
             get
             {
-                return (m_Data & 0x08) != 0 ? true : false;
+                return (m_Data & 0x80) != 0 ? true : false;
             }
             set
             {
-                m_Data = (byte)((m_Data & 0xF7) + (value ? 0x08 : 0x00));
+                m_Data = (byte)((m_Data & 0x7F) + (value ? 0x80 : 0x00));
                 updateFrameData();
             }
         }
@@ -216,11 +221,11 @@ namespace eightbit.Data.SpriteData
         {
             get
             {
-                return (m_Data & 0x10) != 0 ? true : false;
+                return (m_Data & 0x40) != 0 ? true : false;
             }
             set
             {
-                m_Data = (byte)((m_Data & 0xEF) + (value ? 0x10 : 0x00));
+                m_Data = (byte)((m_Data & 0xBF) + (value ? 0x40 : 0x00));
                 updateFrameData();
             }
         }
@@ -299,6 +304,7 @@ namespace eightbit.Data.SpriteData
         {
             Name = reader.ReadString();
             m_Data = reader.ReadByte();
+            m_Tile = reader.ReadByte();
             if (HasStandardSprites)
             {
                 m_StandardFrames = new SpriteMetaTileFrame[8][];
@@ -341,6 +347,7 @@ namespace eightbit.Data.SpriteData
         {
             writer.Write((string)Name);
             writer.Write((byte)m_Data);
+            writer.Write((byte)m_Tile);
             if (m_StandardFrames != null)
                 for (int i = 0; i < m_StandardFrames.Length; i++)
                     for (int j = 0; j < m_StandardFrames[i].Length; j++)

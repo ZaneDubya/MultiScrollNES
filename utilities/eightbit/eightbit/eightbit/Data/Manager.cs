@@ -125,9 +125,9 @@ namespace eightbit.Data
             pointers.Close();
             data.Close();
 
-            headers = new Core.BinaryFileWriter(directory + "spr_hdrs.dat", false);
+            headers = new Core.BinaryFileWriter(directory + "spr_hdrs.asm", false);
             data = new Core.BinaryFileWriter(directory + "spr_data.dat", false);
-            m_Sprites.Export(headers, data);
+            m_Sprites.Export(0xA000, 0x1000, 32, headers, data); // constants relate to data placement within banks. see Banks.txt
             headers.Close();
             data.Close();
 

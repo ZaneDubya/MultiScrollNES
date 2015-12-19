@@ -11,7 +11,6 @@
 .alias	MusicDataLo			$00
 
 .alias	ChunkData			$8000
-.alias	SpriteData			$B800
 
 .alias	MusicDataSet0		$8000		; these come from PRG/audio.asm
 .alias	MusicDataSet1		$a000		; these come from PRG/audio.asm

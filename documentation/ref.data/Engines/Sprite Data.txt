@@ -8,22 +8,22 @@ Sprite data in ROM (4b header) x 128/256
     
     1b Sprite Data
         7654 3210
-        wxss .fff
-            s = Sprite size 
-				00 = 8x8 (1x1 tiles) (each metasprite = 2b)
-				01 = 16x16 (2x2 tiles) (each metasprite = 8b)
-				10 = 24x24 (3x3 tiles) (each metasprite = 18b)
-				11 = 32x32 (4x4 tiles) (each metasprite = 32b)
+        wx.. .fff
             f = count of extra frames (2/8/18/32 bytes each)
                 Range: 0-7
-				Value: 0, 1, 2, 3, 4, 8, 16, 16*
+                Value: 0, 1, 2, 3, 4, 8, 16, 16*
                        *values > 16 not allowed.
             w = Has standard 8 walk/stand metasprites
             x = Has 4 extended combat metasprites
     
     1b Tile Data
         7654 3210
-        ..yx cccc
+        yxcc ccss
+        s = Sprite size 
+                00 = 8x8 (1x1 tiles) (each metasprite = 2b)
+                01 = 16x16 (2x2 tiles) (each metasprite = 8b)
+                10 = 24x24 (3x3 tiles) (each metasprite = 18b)
+                11 = 32x32 (4x4 tiles) (each metasprite = 32b)
         c = count of tiles to copy to CHRRAM (standard tiles)  * (range of 1-16)
         x = add 16 to c, requires additional 16 tile 'slot' of CHRRAM to load.
         y = add 32 to c, require additional 2 'slots' of CHRRAM to load.

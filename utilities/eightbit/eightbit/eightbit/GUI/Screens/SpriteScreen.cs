@@ -77,7 +77,7 @@ namespace eightbit.GUI.Screens
                 new Label(8, y_offset + 20 + 48 + 4, "Extra frames:"),
                 cmbExtraFrames = new ComboBox(8 + 88, y_offset + 18 + 48, 78, string.Empty, dropDownItems: new List<ComboBox.DropDownItem>() {
                     new ComboBox.DropDownItem("0"), new ComboBox.DropDownItem("1"), new ComboBox.DropDownItem("2"), new ComboBox.DropDownItem("3"),
-                    new ComboBox.DropDownItem("4"), new ComboBox.DropDownItem("8"), new ComboBox.DropDownItem("16"), new ComboBox.DropDownItem("32") }) {
+                    new ComboBox.DropDownItem("4"), new ComboBox.DropDownItem("8"), new ComboBox.DropDownItem("16"), new ComboBox.DropDownItem("16*") }) {
                     OnSelectionChanged = cmbExtraFrames_OnSelectionChanged },
                 chkHasWalkSprites = new CheckBox(8, y_offset + 28 + 72, "Has Walk Sprites") {
                     OnToggle = chkHasWalkSprites_OnToggle },
@@ -240,8 +240,8 @@ namespace eightbit.GUI.Screens
                     chkHasExtendedSprites.IsToggled = sprite.HasExtendedSprites;
                     cmbSpriteSize.SelectedIndex = (int)sprite.SpriteSize;
                     cmbExtraFrames.SelectedIndex = (int)sprite.ExtraFrames;
-                    lblSpriteDataByte.Value = string.Format("Header Data: 0x{0:X2}", sprite.DataByte);
-                    lblSpriteMetaDataSize.Value = string.Format("Tile Data: {0}b", sprite.MetaDataSize + sprite.TileTransformTable.Length * 2);
+                    lblSpriteDataByte.Value = string.Format("Header Data: 0x{0:X2}{1:X2}", sprite.DataByte, sprite.TileByte);
+                    lblSpriteMetaDataSize.Value = string.Format("Data Size: {0}b", sprite.MetaDataSize + sprite.TileTransformTable.Length * 2);
                     int tileGfxSize = sprite.TileTransformTable.Length * 16;
                 }
                 refreshMetatileDisplay();

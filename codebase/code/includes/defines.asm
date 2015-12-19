@@ -93,14 +93,19 @@
                                     ; $80 = no Actor in this slot.
                                     ; highest y value should be in highest slot
 
-; $00Ex - AVAILABLE.
+; $00Ex - Sprite Loader Library.
+.alias  SprLdr_LoadThisSlot    $00E0 ; current slot being loaded.
+.alias  SprLdr_LoadThisTile    $00E1 ; current tile in slot being loaded (0-63)
+.alias  SprLdr_NMIAddress      $00E2 ; address used to load tiles from in NMI
+.alias  SprLdr_NMIAddressHi    $00E3 ; ""
+
                                     
 ; $00Fx - Flags and save data. AVAILABLE: $F4 - $FF (12)
 .alias  ProgressFlag0           $00F0 ; $F0-$F2 = 24 bits of progression
 .alias  TemporaryFlag           $00F3 ; unsaved, reset on location change
 
-; $01xx - VBLANK Buffer and Stack. AVAILABLE: $0180 - $01BE (63)
-.alias  CHRRAM_BUFFER           $0100    
+; $01xx - Famitone and Stack. AVAILABLE: $01BA - $01BE (63)
+.alias  FT_BASE_ADR             $0100   ; $BA bytes.   
 .alias  STACK_OVERFLOW          $01BF
 ; $01C0 - $01FF - Stack (64b)
 
@@ -126,10 +131,9 @@
 .alias  Actor_Var4              $03E0
 .alias  Actor_Var5              $03F0
 
-; $04xx - Famitone and Sprite data.
-.alias  FT_BASE_ADR             $0400   ; $BA bytes. 
-.alias  SpriteLoaderDefs        $04E0    
-.alias  SpriteLoaderUses        $04F0    
+; $04xx - Sprite Loader Library
+.alias  SprLdr_SpriteIndexes    $0400
+.alias  SprLdr_UsageCounts      $0410 
 
 ; $05xx - AVAILABLE.
 

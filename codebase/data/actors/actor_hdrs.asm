@@ -13,12 +13,12 @@ ActorHeaderSprite:                                  ; sprite def index
     .byte $00, $00, $00, $00
     .byte $00, $00, $00, $00
 ActorHeaderAnimatePtr:                              ; animation script
-    .byte $00, $00, $00, $00
+    .byte <ActDrw_Std, $00, $00, $00
     .byte $00, $00, $00, $00
     .byte $00, $00, $00, $00
     .byte $00, $00, $00, $00
 ActorHeaderAnimatePtrHi:
-    .byte $00, $00, $00, $00
+    .byte >ActDrw_Std, $00, $00, $00
     .byte $00, $00, $00, $00
     .byte $00, $00, $00, $00
     .byte $00, $00, $00, $00

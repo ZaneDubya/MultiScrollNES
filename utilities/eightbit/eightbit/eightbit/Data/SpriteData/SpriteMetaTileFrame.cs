@@ -92,8 +92,8 @@ namespace eightbit.Data.SpriteData
             {
                 if (tile_transform_table[i].Item1 == Tile && tile_transform_table[i].Item2 == TilePage)
                 {
-                    writer.Write(i);
-                    writer.Write(m_Attributes);
+                    writer.Write((byte)i);
+                    writer.Write((byte)m_Attributes);
                     return;
                 }
             }
