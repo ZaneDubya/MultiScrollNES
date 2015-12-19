@@ -1,4 +1,6 @@
 ; SprLdr - Sprite Loader functionality. Manages allocation of Sprite CHRRAM.
+.alias SPRLDR_TILESPERFRAME     $08
+
 SprLdr_Setup:
 {
     lda #$80
@@ -153,10 +155,10 @@ SprLdr_DeallocTiles:
 ; Will only be called if SprLdr_LoadOpReady != 0.
 ; Indexes to tiles are in SprLdr_SpriteLoads and SprLdr_PageLoads
 ; Address to copy these to is in SprLdr_NMIAddress.
-; Takes 850-950 cycles. I think. No more than 1000.
 ; IN    None
 ; Out   Write tiles to CHRRAM.
 ; NOTE  Wipes out a, x, y, SprLdr_NMIAddress, and SprLdr_NMIAddressHi.
+; CYCLE 1659 [+ 8 if bne _nexttile is not page-aligned]
 SprLdr_LoadNMI:
 {
     `Mapper_SwitchBank Bank_TilGfxData
@@ -223,12 +225,12 @@ SprLdr_LoadNMI:
             lda (SprLdr_NMIAddress),y       ; 11. Iteration 16
             sta PPU_DATA                    ;
         inx                                 ; 2
-        cpx #$04                            ; 2
+        cpx #SPRLDR_TILESPERFRAME           ; 2
         bne _nexttile                       ; 3/2 on last loop
     }
     lda #$00
     sta SprLdr_LoadOpReady
-    lda #$04
+    lda #SPRLDR_TILESPERFRAME
     `addm SprLdr_LoadThisTile
     sta SprLdr_LoadThisTile
     rts
@@ -296,9 +298,10 @@ _load_slot_in_y:
     `add $10
     sta SplLdr_TilesToLoad      ; SplLdr_TilesToLoad = 16 * slots to load.
     
-; create a load operation - copy 4 tile indexes to load to SprLdr_SpriteIndexes 
-; and SprLdr_PageIndexes. There may be some garbage at the end of each slot -
-; that's okay!
+; Create a load operation: copy SPRLDR_TILESPERFRAME tile indexes to load to
+; SprLdr_SpriteIndexes and SprLdr_PageIndexes. There may be some garbage at the
+; end of each slot - artists should work on filling those slots up or using
+; fewer tiles!
 _setup_next_load_op:
     `Mapper_SwitchBank Bank_SprData
     ; set up the PPU Address to copy these tiles to during NMI
@@ -339,7 +342,8 @@ _setup_next_load_op:
     lda SpriteHdrs_AddressHi,y
    `addm MultiplySumHi
     sta [_ptr+1]
-    ; load and store tile and page indexes for 4 tiles from sprite's tile data.
+    ; load and store tile and page indexes for SPRLDR_TILESPERFRAME tiles from
+    ; sprite's tile data.
     lda SprLdr_LoadThisTile
     asl
     tay
@@ -353,7 +357,7 @@ _setup_next_load_op:
         sta SprLdr_TileAddressesHi,x
         iny
         inx
-        cpx #$04
+        cpx #SPRLDR_TILESPERFRAME
         bne _next
     }
     ; now multiply each of these 2-byte values by 16.
