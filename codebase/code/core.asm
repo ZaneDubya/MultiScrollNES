@@ -5,9 +5,11 @@
 .include "core/library.asm"
 .include "core/controller.asm"
 .include "core/sprites.asm"
+.include "core/sprldr.asm"
 .include "core/actors.asm"
 .include "core/maps.asm"
 .include "core/startup.asm"
+.include "core/exception.asm"
 
 .include "ModeWorld/ModeWorld.asm"
 .include "ModeText/ModeText.asm"

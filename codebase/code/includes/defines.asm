@@ -32,6 +32,8 @@
 .alias  Denominator         $0035
 .alias  MultiplySum         $0035
 .alias  MultiplySumHi       $0036
+.alias  ErrorAddr           $0037
+.alias  ErrorAddrHi         $0038
 
 .alias  OamCurrentSprChk    $003D
 .alias  OamCurrentIndex     $003E
@@ -113,7 +115,7 @@
 .alias  OAM_BUFFER              $0200
 
 ; $03xx  - Actor data (16 total). AVAILABLE: NONE.
-; for description of this data, see ref.data\Engines\Actors.txt
+; for description of this data, see ref.data\Engines\Actor Data.txt
 .alias  Actor_Bitflags          $0300   
 .alias  Actor_X                 $0310
 .alias  Actor_Y                 $0320
@@ -155,3 +157,4 @@
 .require "defines_enums.asm"
 .require "defines_banks.asm"
 .require "defines_registers.asm"
+.require "constants_sprldr.asm"
