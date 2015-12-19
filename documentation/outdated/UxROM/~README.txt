@@ -1,0 +1,1 @@
+While the bank switch and header code is still good, data has moved around and therefore this code won't work until the layout of the prg rom banks are redesigned to match the current code.
