@@ -1,4 +1,4 @@
-0,prg.map
-1,prg.gfx
-2,prg.audio
-3,prg.core
+0,0.map
+1,1.gfx
+2,2.audio
+3,3.core

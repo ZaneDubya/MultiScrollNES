@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using Core.GUI.Content;
+﻿using Core.GUI.Content;
 using Core.GUI.Framework;
 using Core.Input;
+using eightbit.Data.TileSetData;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
 namespace eightbit.GUI.Screens
 {
@@ -236,7 +237,7 @@ namespace eightbit.GUI.Screens
                     {
                         for (int j = 0; j < 4; j++)
                         {
-                            Data.TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(i, j);
+                            TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(i, j);
                             metatile.SetTile(j, tile_page_attrib.Tile, State.GfxPage(tile_page_attrib.Page).Texture);
                             metatile.Attribute = tile_page_attrib.Attribute;
                         }
@@ -299,7 +300,7 @@ namespace eightbit.GUI.Screens
                     m_MetaTiles[i].Flags = State.Data.TileSets[State.SelectedTileset].GetFlags(i);
                     for (int j = 0; j < 4; j++)
                     {
-                        Data.TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(i, j);
+                        TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(i, j);
                         m_MetaTiles[i].SetTile(j, tile_page_attrib.Tile, State.GfxPage(tile_page_attrib.Page).Texture);
                         m_MetaTiles[i].Attribute = tile_page_attrib.Attribute;
                     }

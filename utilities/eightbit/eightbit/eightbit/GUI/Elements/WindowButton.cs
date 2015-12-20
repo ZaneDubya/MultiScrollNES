@@ -1,5 +1,5 @@
-﻿using Core.Input;
-using Core.GUI.Framework;
+﻿using Core.GUI.Framework;
+using Core.Input;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace eightbit.GUI.Elements

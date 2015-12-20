@@ -1,0 +1,76 @@
+
+Sprite data in ROM (4b header) x 128/256
+    2b Address of Metasprite / CHR Tile Index data for this sprite.
+        FEDCBA98 76543210
+        bbaaaaaa aaaaaaaa
+        b = bank offset
+        a = address within bank
+    
+    1b Sprite Data
+        7654 3210
+        .... ffff
+        f = count of frames, 1-32
+    
+    1b Tile Data
+        7654 3210
+        yxcc ccss
+        s = Sprite size 
+                00 = 8x8 (1x1 tiles) (each metasprite = 2b)
+                01 = 16x16 (2x2 tiles) (each metasprite = 8b)
+                10 = 24x24 (3x3 tiles) (each metasprite = 18b)
+                11 = 32x32 (4x4 tiles) (each metasprite = 32b)
+        c = count of tiles to copy to CHRRAM (standard tiles)  * (range of 1-16)
+        x = add 16 to c, requires additional 16 tile 'slot' of CHRRAM to load.
+        y = add 32 to c, require additional 2 'slots' of CHRRAM to load.
+        
+Metasprite / CHR Tile Indexes
+    X bytes Metasprite data
+    Y bytes CHR Tile Index data
+    
+    where X = sprite size (1, 4, 9, or 16) x 2 x sprite count bytes.
+    where Y = 16 bit indexes (2 bytes each)
+              * This could be interleaved 12 bit numbers, but this would save 
+                only 8 bytes per sprite on average... why bother?
+
+Metasprites:
+    Each metasprite is made up of a number of metasprite indexes.
+        1x1 metasprite = 1 metasprite index.
+        2x2 metasprite = 4 metasprite indexes.
+        3x3 metasprite = 9 metasprite indexes.
+        4x4 metasprite = 16 metasprite indexes.
+        
+    In a metasprite, the indexes are laid out left to right and then top to
+    bottom. Thus, for a 2x2 metasprite, the indexes are: UL, UR, BL, BR.
+    
+    The offset to a given metasprite within a sprite definition's list of
+    metasprites is calculated based on the DrawType, DrawIndex, and the
+    sprite definition's first byte as follows:
+    
+    Standard (8 metasprites if present):
+        walk n1 (doubles as stand n)
+        walk n2
+        walk e1 (doubles as stand e)
+        walk e2
+        walk s1 (doubles as stand s)
+        walk s2
+        walk w1 (doubles as stand w)
+        walk w2
+    Combat (4 metasprites if present):
+        dead
+        cast
+        gethit
+        block
+    Extra frames (variable number of metasprites):
+        0, 1, 2, 3, 4, 8, 16, 32
+        
+    Ex. DrawType = standard, DrawIndex = 7, Size = 2x2
+        MetaSprite Offset = (7 * 4) * 2 = 56.
+    Ex. DrawType = extra, DrawIndex = 3, def has standard and combat, Size = 3x3
+        Offset = (8 + 4 + 3) * 9 = 135
+    Ex. DrawType = extra, DrawIndex = 7, def has standard, not combat, Size= 4x4
+        Offset = (8 + 7) * 16 = 240
+        
+    As an aside, the maximum amount of metadata in a sprite would be:
+    16 * (8 + 4 + 32) = 704. As this is 10bits of data, we will need to track
+    overflow as we multiply the offset...
+    

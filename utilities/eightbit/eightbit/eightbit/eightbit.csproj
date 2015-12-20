@@ -161,7 +161,11 @@
     <Compile Include="Core\Graphics\VertexPositionTextureExtra.cs" />
     <Compile Include="Core\Serialize.cs" />
     <Compile Include="Data\Maps.cs" />
+    <Compile Include="Data\SpriteData\Sprite.cs" />
+    <Compile Include="Data\SpriteData\SpriteMetaTileFrame.cs" />
     <Compile Include="Data\Sprites.cs" />
+    <Compile Include="Data\TileSetData\TilePage.cs" />
+    <Compile Include="Data\TileSetData\TilePageAttribute.cs" />
     <Compile Include="Galezie\Gfxbank.cs" />
     <Compile Include="Galezie\Gfxset.cs" />
     <Compile Include="Galezie\Manager.cs" />
@@ -274,6 +278,7 @@
   <ItemGroup>
     <None Include="Content\GreyGUI\Map.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

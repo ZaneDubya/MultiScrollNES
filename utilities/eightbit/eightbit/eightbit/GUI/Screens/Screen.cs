@@ -1,6 +1,6 @@
-using Microsoft.Xna.Framework;
 using Core.GUI.Framework;
 using Core.Input;
+using Microsoft.Xna.Framework;
 
 namespace eightbit.GUI.Screens
 {

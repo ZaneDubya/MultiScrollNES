@@ -5,41 +5,41 @@
 ; are preserved in any source code copies. This file is offered as-is, without
 ; any warranty.
 GetTVSystem:
-	ldx #0
-	ldy #0
-	lda FrameCount
+    ldx #0
+    ldy #0
+    lda FrameCount
 nmiwait1:
-	cmp FrameCount
-	beq nmiwait1
-	lda FrameCount
+    cmp FrameCount
+    beq nmiwait1
+    lda FrameCount
 nmiwait2:
-	inx				; Each iteration takes 11 cycles.
-	bne +			; NTSC NES: 29780 cycles or 2707 = $A93 iterations
-	iny				; PAL NES:  33247 cycles or 3022 = $BCE iterations
-*	cmp FrameCount	; Dendy:    35464 cycles or 3224 = $C98 iterations
-	beq nmiwait2	; so we can divide by $100 (rounding down), subtract ten,
-	tya				; and end up with 0=ntsc, 1=pal, 2=dendy, 3=unknown
-	sec
-	sbc #10
-	cmp #3
-	bcc notAbove3
-	lda #3
+    inx             ; Each iteration takes 11 cycles.
+    bne +           ; NTSC NES: 29780 cycles or 2707 = $A93 iterations
+    iny             ; PAL NES:  33247 cycles or 3022 = $BCE iterations
+*   cmp FrameCount  ; Dendy:    35464 cycles or 3224 = $C98 iterations
+    beq nmiwait2    ; so we can divide by $100 (rounding down), subtract ten,
+    tya             ; and end up with 0=ntsc, 1=pal, 2=dendy, 3=unknown
+    sec
+    sbc #10
+    cmp #3
+    bcc notAbove3
+    lda #3
 notAbove3:
-	rts
+    rts
 
 ;-------------------------------[ Get Random ]----------------------------------
 ; Sets A to a random number between 0-255.
 ; Time: 19-22 cycles
 GetRandom:
 .scope
-	lda Random_Seed
-	beq _do
-	asl
-	beq _no			;if the input was $80, skip the EOR
-	bcc _no
+    lda Random_Seed
+    beq _do
+    asl
+    beq _no         ;if the input was $80, skip the EOR
+    bcc _no
 _do:eor #$1d
 _no:sta Random_Seed
-	rts
+    rts
 .scend
 
 ;-------------------------------[ Update Timers ]-------------------------------
@@ -48,116 +48,116 @@ _no:sta Random_Seed
 ; Timer1 is decremented every frame. Timer2 is decremented every 10 frames.
 UpdateTimers:
 .scope
-	ldx #$00			; Decrement only Timer1
-	dec TimerDelay		;
-	bpl _DecTimer		;
-	lda #$09			; TimerDelay hits #$00 every 10th frame.
-	sta TimerDelay		; Reset TimerDelay after it hits #$00.
-	ldx #$01			; Decrement Timer2 and Timer1.
+    ldx #$00            ; Decrement only Timer1
+    dec TimerDelay      ;
+    bpl _DecTimer       ;
+    lda #$09            ; TimerDelay hits #$00 every 10th frame.
+    sta TimerDelay      ; Reset TimerDelay after it hits #$00.
+    ldx #$01            ; Decrement Timer2 and Timer1.
 _DecTimer:
-	lda Timer1,x		;
-	beq +				;Don't decrease if timer is already zero.
-	dec Timer1,x		;
-*	dex					;Timer1 and Timer2 decremented every frame.
-	bpl _DecTimer		;
-	rts					;
+    lda Timer1,x        ;
+    beq +               ;Don't decrease if timer is already zero.
+    dec Timer1,x        ;
+*   dex                 ;Timer1 and Timer2 decremented every frame.
+    bpl _DecTimer       ;
+    rts                 ;
 .scend
 
 ;---------------------[ Simple divide and multiply routines ]-------------------
-						; Divide by shifting A right.
-Adiv32: lsr				; Divide by 32.
-Adiv16: lsr				; Divide by 16.
-Adiv8:  lsr				; Divide by 8.
-Adiv4:  lsr				; Divide by 4.
-Adiv2:  lsr				; Divide by 2.
-	rts					;
-						; Multiply by shifting A left.
-Amul32: asl				; Multiply by 32.
-Amul16: asl				; Multiply by 16.
-Amul8:	asl				; Multiply by 8.
-Amul4:	asl				; Multiply by 4.
-Amul2:	asl				; Multiply by 2.
-	rts					;
-	
+                        ; Divide by shifting A right.
+Adiv32: lsr             ; Divide by 32.
+Adiv16: lsr             ; Divide by 16.
+Adiv8:  lsr             ; Divide by 8.
+Adiv4:  lsr             ; Divide by 4.
+Adiv2:  lsr             ; Divide by 2.
+    rts                 ;
+                        ; Multiply by shifting A left.
+Amul32: asl             ; Multiply by 32.
+Amul16: asl             ; Multiply by 16.
+Amul8:  asl             ; Multiply by 8.
+Amul4:  asl             ; Multiply by 4.
+Amul2:  asl             ; Multiply by 2.
+    rts                 ;
+    
 ;-------------------------------[ 8bit Multiply ]-------------------------------
 ; General 8bit * 8bit = 8bit multiply by White Flame (aka David Holz)
 ; Multiplies multiplier by multiplicand and returns result in A
-; In:	A (multiplicand) and X (multiplier, should be small for speed)
-;		Signedness should not matter
-; Out:	A is the product, X is not touched.
+; In:   A (multiplicand) and X (multiplier, should be small for speed)
+;       Signedness should not matter
+; Out:  A is the product, X is not touched.
 Multiply8:
 .scope
-	sta Multiplicand
-	stx Multiplier
-	lda #$00
-	beq _enterLoop
+    sta Multiplicand
+    stx Multiplier
+    lda #$00
+    beq _enterLoop
 _doAdd:
-	clc
-	adc Multiplier
+    clc
+    adc Multiplier
 _loop:
-	asl Multiplier
+    asl Multiplier
 _enterLoop:
-	lsr Multiplicand
-	bcs _doAdd
-	bne _loop
+    lsr Multiplicand
+    bcs _doAdd
+    bne _loop
 _end:
-	rts
+    rts
 .scend
 
 ;-------------------------------[ 16bit Multiply ]------------------------------
 ; 8bit * 8bit = 16bit multiply by White Flame (aka David Holz)
-; In:	Multiplies A and X. X should be smaller.
-; Out:	Low byte in X and MultiplySum, HiByte in MultiplySumHi.
-;		Y is preserved.
+; In:   Multiplies A and X. X should be smaller.
+; Out:  Low byte in X and MultiplySum, HiByte in MultiplySumHi.
+;       Y is preserved.
 Multiply16:
 .scope
-	sta Multiplier
-	stx Multiplicand
-	tya
-	pha
-	lda #$00
-	tay
-	sty MultiplySumHi  
-	beq _enterLoop
+    sta Multiplier
+    stx Multiplicand
+    tya
+    pha
+    lda #$00
+    tay
+    sty MultiplySumHi  
+    beq _enterLoop
 _doAdd:
-	clc
-	adc Multiplier
-	tax
-	tya
-	adc MultiplySumHi
-	tay
-	txa
+    clc
+    adc Multiplier
+    tax
+    tya
+    adc MultiplySumHi
+    tay
+    txa
 _loop:
-	asl Multiplier
-	rol MultiplySumHi
+    asl Multiplier
+    rol MultiplySumHi
 _enterLoop:  ; accumulating multiply entry point (enter with .A=lo, .Y=hi)
-	lsr Multiplicand
-	bcs _doAdd
-	bne _loop
-	stx MultiplySum
-	sty MultiplySumHi
-	pla
-	tay
-	rts
+    lsr Multiplicand
+    bcs _doAdd
+    bne _loop
+    stx MultiplySum
+    sty MultiplySumHi
+    pla
+    tay
+    rts
 .scend
 
 ;--------------------------------[ 8bit Divide ]--------------------------------
 ; 8bit/8bit division by White Flame (aka David Holz)
-; In:	A (numerator) and X (denominator)	
-; Out:	A (remainder) and X (quotient)
+; In:   A (numerator) and X (denominator)   
+; Out:  A (remainder) and X (quotient)
 Divide8:
-	sta Numerator
-	stx Denominator
-	lda #$00
-	ldx #$07
-	clc
-*	rol Numerator
-	rol
-	cmp Denominator
-	bcc +
-	sbc Denominator
-*	dex
-	bpl --
-	rol Numerator
-	ldx Numerator
-	rts
+    sta Numerator
+    stx Denominator
+    lda #$00
+    ldx #$07
+    clc
+*   rol Numerator
+    rol
+    cmp Denominator
+    bcc +
+    sbc Denominator
+*   dex
+    bpl --
+    rol Numerator
+    ldx Numerator
+    rts

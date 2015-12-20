@@ -15,26 +15,33 @@ Last updated 07/09/14
 
 ==============================[ 1. Actors In ROM ]==============================
 Actor definitions, placement in the world, and scripting are handled with the 
-eightbit utility.
+eightbit utility. An actor has scripts for interaction, drawing, combat, etc.
 
 ------------------------[ 1.A. Actor Type Definitions ]-------------------------
 Object data definition, 8b each (32 per 256b)
+    1b Sprite data
+            7654 3210
+            .... .sss
+            s = speed (pixels per frame)
     1b Sprite Definition Index
-    1b Initial Sprite Frame
-    1b Initial Bitflag
-        VBID ....
-        V - Visible (has sprite) (both this and the Actor List bitflag V must be
-            set for the sprite to be visible!)
-        B - Blocking
-        I - Interactable (displays 'A' button when close, has interact script)
-        D - is a dynamic actor (has main script, ticks)
-    1b Combat data definition index ($ff = no script)
+    2b Pointer to animate script ($0000 = no script, not visible)
     2b Pointer to interaction script ($0000 = no script)
     2b Pointer to dynamic script header ($0000 = no script)
         Format for pointers is BBpppppp pppppppp
             B - bank offset (0-3) from global scripts bank.
             p - pointer inside specified bank.
                 (points to to %10pppppp pppppppp, $8000 - $bfff)
+                
+    Initial flags on boot:
+        V - Visible (has sprite) = 1
+        B - Blocking = 1
+        I - Interactable (shows 'A' button when near, has interact script) = 0
+        D - is a dynamic actor (has main script, ticks) = 1 if ptr is not $0000
+        M - is accelerating = 0
+        C - aCtion - running action = 0
+        P - 'Pause' - if dynamic, do not tick scripts on this actor = 0
+        A - Active; has been instantiated. (if 0, empty actor slot) = 1
+        
     
 ---------------------[ 1.B. Actor Combat Data Definitions ]---------------------
 Not yet implemented.
@@ -94,41 +101,45 @@ Actor data array in active memory (16 x 16b actors 'alive', 256b total)
   The segments are as follows:
   
     $0x00   Actor_Bitflags
-            VBID ..PR
+            7654 3210
+            VBID MC.A
             V - Visible (has sprite)
             B - Blocking
             I - Interactable (shows 'A' button when near, has interact script)
             D - is a dynamic actor (has main script, ticks)
-            
-            P - 'Pause' - if dynamic, do not tick scripts on this actor.
-            R - Running; has been instantiated. (if 0, empty actor slot).
+            M - is moving.
+            C - aCtion - running action.
+            A - Active; has been instantiated. (if 0, empty actor slot).
             
     $0x10   Actor_X - X pixel position in superchunk
     $0x20   Actor_Y - Y pixel position in superchunk
-    $0x30   Actor_SuperChunk - Superchunk this actor is located within
-            Wraps at 3.
-    $0x40   Actor_ID & Actor_IDHi
-            2-byte unique identifier for this actor.
-    $0x60   Actor_ObjPtr & Actor_ObjPtrHi
-            2-byte pointer to object data that defines this actor.
+    $0x30   Actor_SuperChunk - Superchunk this actor is located within.
+            Wraps at 15.
+    $0x40   Actor_DrawData0
+            7654 3210
+            cccc ffpp
+            p = palette (4-7)
+            f = facing.
+            c = chrram tile index for first tile.
+    $0x50   Actor_DrawData1
+            this depends on the actor. For 'combat' actors, it is:
+            m..i iiii
+            m = draw movement sprite, otherwise draw sprite with index i
+    $0x60   UNUSED
+    $0x70   Actor_Definition (0-255)
+            Index into Actor Definitions.
     $0x80   Actor_ScriptPtr & Actor_ScriptPtrHi
             2-byte pointer to current executing script
-    $0xA0   Actor_Var0 - Actor_Var3
-            4 1b variables, used with the current executing script
-    $0xE0   Actor_Action
-            Used to run an action instead of executing the script every frame.
-    $0xF0   Actor_Frame
-            Current sprite frame to display if the actor is visible.
+    $0xA0   Actor_Var0 - Actor_Var5
+            6 1b variables, used with the current executing script or action.
 
-For actors, flag/id is set on death, also on load, unset on unload if not dead.
-	if flagid is $ffff, there is no id, and we always load.
-    
-Dynamic action bitflag format: oooo AAAA
+
+Dynamic action bitflag format: oooo AAAA in Actor_Var5.
 A___   	Notes
 $0      No action. Execute script.
 $1      Wait. No execute until wait is complete.
-        Sum of offset and 1 is multiplied by 15, result is number of frames to
-        wait. This command uses Var3 as a counter, and thus wipes the same out.
+        Sum of (offset + 1) is multiplied by 15, result is number of frames to
+        wait. This command uses Var4 as a counter, and thus wipes the same out.
         o = $0 wait 15 frames (1/4 second)
             $1 wait 30 frames (1/2 second)
             $3 wait 60 frames (1 second)
@@ -141,7 +152,7 @@ $2      Moving, tile based. Offset includes direction and movement and speed.
             $2 = move 1 pixel per frame. Moving one tile takes 16 frames.
             $1 = move 1 pixel every other frame. Moves one tile in 32 frames.
             $0 = move 1 pixel every fourth frame. Moves one tile in 64 frames.
-$3      Animating, o is the animation script.
+$3      Animating, o is the animation script for the designated ActorType.
 
 
 ------------------------[ 2.B. Active Actor Y-Sorting ]-------------------------

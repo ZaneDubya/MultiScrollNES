@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Core.GUI.Content;
+﻿using Core.GUI.Content;
 using Core.GUI.Framework;
 using Core.Input;
+using eightbit.Data.TileSetData;
+using System.Collections.Generic;
 
 namespace eightbit.GUI.Screens
 {
@@ -130,7 +129,7 @@ namespace eightbit.GUI.Screens
 
             for (int j = 0; j < 4; j++)
             {
-                Data.TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(tile, j);
+                TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(tile, j);
                 ctlChunk.SetTile(index, j, tile_page_attrib.Tile, State.GfxPage(tile_page_attrib.Page).Texture);
                 ctlChunk.SetAttribute(index, tile_page_attrib.Attribute);
             }
@@ -182,7 +181,7 @@ namespace eightbit.GUI.Screens
                 {
                     for (int j = 0; j < 4; j++)
                     {
-                        Data.TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(i, j);
+                        TilePageAttribute tile_page_attrib = State.Data.TileSets[State.SelectedTileset].GetSubTile(i, j);
                         aioTileset.SetTile(i, j, tile_page_attrib.Tile, State.GfxPage(tile_page_attrib.Page).Texture);
                         aioTileset.SetAttribute(i, tile_page_attrib.Attribute);
                     }

@@ -14,7 +14,8 @@ namespace If6502
 
         public bool Success = false;
 
-        string msg_error_failure = "Failure ", msg_error_atline = " at line {0}.";
+        string msg_error_failure = "Failure ";
+        string msg_error_atline = " at line {0}: {1}";
 
         public string Interpret(List<StringTokenized> lines)
         {
@@ -30,7 +31,7 @@ namespace If6502
 
             foreach (PassWithError pass in passes)
                 if (!pass.Pass.Invoke(lines))
-                    return pass.ErrorMessage(iLine);
+                    return pass.ErrorMessage(iLine, lines);
             return "Success!";
         }
 
@@ -365,9 +366,9 @@ namespace If6502
                 Pass = pass;
                 _Error = error;
             }
-            public string ErrorMessage(int line)
+            public string ErrorMessage(int line, List<StringTokenized> lines)
             {
-                return string.Format(_Error, line);
+                return string.Format(_Error, line, lines[line].Line);
             }
         }
     }

@@ -1,4 +1,4 @@
-CPU Cycles per line:	113.667
-CPU Cycles per frame: 	29780.5
-CPU Cycles per second:	1786830
-	
+CPU Cycles per line:    113.667
+CPU Cycles per frame:   29780.5
+CPU Cycles per second:  1786830
+    

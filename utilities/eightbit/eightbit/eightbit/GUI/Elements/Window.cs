@@ -1,6 +1,6 @@
-﻿using System;
-using Core.GUI.Content;
+﻿using Core.GUI.Content;
 using Core.GUI.Framework;
+using System;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace eightbit.GUI.Elements

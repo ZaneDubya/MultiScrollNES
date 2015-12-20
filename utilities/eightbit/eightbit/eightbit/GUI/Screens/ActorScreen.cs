@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Core.GUI.Content;
+﻿using Core.GUI.Content;
 using Core.GUI.Framework;
+using eightbit.Data.SpriteData;
 using eightbit.GUI.Elements;
-using Microsoft.Xna.Framework.Graphics;
-using Core.Input;
 
 namespace eightbit.GUI.Screens
 {
@@ -38,7 +35,7 @@ namespace eightbit.GUI.Screens
         Label lblSpriteCount;
         ComboBox cmbPalettes;
         // list
-        ListBox<Data.Sprite> lstSprites;
+        ListBox<Sprite> lstSprites;
 
         // ================================================================================
         // Initialization

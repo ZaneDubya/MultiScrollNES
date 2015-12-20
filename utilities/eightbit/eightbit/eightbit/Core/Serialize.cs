@@ -427,6 +427,18 @@ namespace Core
 
             m_Buffer[m_Index++] = (byte)(value ? 1 : 0);
         }
+
+        internal void Write(byte[] v)
+        {
+            for (int i = 0; i < v.Length; i++)
+                Write(v[i]);
+        }
+
+        public void WriteString(string v)
+        {
+            for (int i = 0; i < v.Length; i++)
+                Write((byte)v[i]);
+        }
     }
 
     public sealed class BinaryFileReader : GenericReader

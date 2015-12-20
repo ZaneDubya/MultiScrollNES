@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Core.GUI.Framework;
 using Core.Input;
 using Microsoft.Xna.Framework;
-using Core.GUI.Framework;
+using System.Collections.Generic;
 
 namespace eightbit.GUI.Elements
 {

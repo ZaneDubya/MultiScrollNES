@@ -1,0 +1,51 @@
+Sprite drawing touches five kinds of data:
+    Raw CHR tiles (encoded by eightbit utility, in ROM).
+    Which CHR tiles are loaded in CHRRAM, and where (handled by SpriteLoader).
+    Which actors are visible on screen (handled by Actor system, based on Actor data in RAM).
+    What Sprite is referenced by each Actor (encoded by eightbit, in Actor in ROM).
+    Which frame of an Actor's Sprite should be drawn (determined by SpritePlacer, based on Actor data in RAM).
+
+SpriteLoader CHRRAM Allocation:
+  * SpriteLoader allocates CHRRAM in 'slots' of tiles. There are 14 slots of
+    16 tiles each (for actor main frames), and 32 tiles left over for
+    effects/menu sprites.
+  * At most there can be 14 graphically unique actors loaded at any given time
+    (a second limitation is the number of palettes available: 4).
+  * An actor can request multiple slots (bigger sprites, bosses?), but this
+    reduces the number of possible graphically unique actors. Multiple slot
+    allocations must be contiguous, so the game must be careful not to
+    'fragment' the slots.
+    
+SpriteLoader: When an Actor is instantiated:
+    SpriteLoader is informed that a new Actor is loaded.
+    SpriteLoader gets the index of that Actor's sprite definition.
+    SpriteLoader checks to see if that Definition's CHRRAM tiles are loaded.
+      N>If it is not, then SpriteLoader reserves a slot of tiles for the new
+        sprite data, informs the tile loading subsystem that new CHRRAM tiles
+        need to be loaded, sets the use count of these tiles to 1, and informs
+        Actor where the first tile begins.
+      Y>If it is, then SpriteLoader increments the use count of the allocated tiles,
+        and informs Actor where the first tile begins.
+
+SpriteLoader: When an Actor is de-instantiated:
+    SpriteLoader finds the allocation data for that Actor Definition.
+    SpriteLoader decrements the use count for those tiles.
+    If use count == 0, those tiles are marked 'free' (although not unloaded).
+
+SpriteDrawer: Drawing Actors
+  * SpriteDrawer is called for each visible actor. Parameters:
+    X, Y, DrawType (standard, combat, extra), and DrawIndex.
+  * SpriteDrawer gets the metasprite information.
+  * SpriteDrawer loads the metadata into OAM buffer, offseting tiles as necessary.
+    
+SpritePlacer code:
+	At FrameBegin, SpriteZero is placed and SpriteIndex is set to 1.
+	The frame code is run and the actors are updated.
+	Finally, SpriteUpdate is called, which goes through all the actors
+		and places them on screen in this order...
+		All Dynamics (pre sorted)
+	... incrementing SpriteIndex as necessary. After all Sprites are drawn,
+		the remainder of Sprites (inc SpriteIndex, while SpriteIndex != 0) are
+		set to y = 0.
+
+For information on how to calculate offsets to a metasprite, see Sprite Data.txt.

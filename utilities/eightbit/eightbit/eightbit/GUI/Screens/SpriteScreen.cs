@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Core.GUI.Content;
+﻿using Core.GUI.Content;
 using Core.GUI.Framework;
+using Core.Input;
+using eightbit.Data;
+using eightbit.Data.SpriteData;
 using eightbit.GUI.Elements;
 using Microsoft.Xna.Framework.Graphics;
-using Core.Input;
+using System.Collections.Generic;
 
 namespace eightbit.GUI.Screens
 {
@@ -54,7 +55,7 @@ namespace eightbit.GUI.Screens
             });
 
             panel_List.AddWidgets(new Widget[] {
-                lstSprites = new ListBox<Data.Sprite>(0, 0, panel_List.InputArea.Width, panel_List.InputArea.Height)
+                lstSprites = new ListBox<Sprite>(0, 0, panel_List.InputArea.Width, panel_List.InputArea.Height)
                 { OnSelectionChanged = lstSprites_OnSelectionChanged }
             });
 
@@ -63,7 +64,8 @@ namespace eightbit.GUI.Screens
                 txtSpriteName = new SingleLineTextBox(52, 4, 136, 16) {
                     OnValueChanged = txtSpriteName_OnValueChanged },
                 lblSpriteDataByte = new Label(8, 30, string.Empty),
-                lblSpriteExportSize = new Label(8, 46, string.Empty)});
+                lblSpriteMetaDataSize = new Label(8, 46, string.Empty)
+            });
 
             int y_offset = 32;
             panel_CurrentSprite.AddWidgets(new Widget[] {
@@ -75,7 +77,7 @@ namespace eightbit.GUI.Screens
                 new Label(8, y_offset + 20 + 48 + 4, "Extra frames:"),
                 cmbExtraFrames = new ComboBox(8 + 88, y_offset + 18 + 48, 78, string.Empty, dropDownItems: new List<ComboBox.DropDownItem>() {
                     new ComboBox.DropDownItem("0"), new ComboBox.DropDownItem("1"), new ComboBox.DropDownItem("2"), new ComboBox.DropDownItem("3"),
-                    new ComboBox.DropDownItem("4"), new ComboBox.DropDownItem("8"), new ComboBox.DropDownItem("16"), new ComboBox.DropDownItem("32") }) {
+                    new ComboBox.DropDownItem("4"), new ComboBox.DropDownItem("8"), new ComboBox.DropDownItem("16"), new ComboBox.DropDownItem("16*") }) {
                     OnSelectionChanged = cmbExtraFrames_OnSelectionChanged },
                 chkHasWalkSprites = new CheckBox(8, y_offset + 28 + 72, "Has Walk Sprites") {
                     OnToggle = chkHasWalkSprites_OnToggle },
@@ -108,12 +110,12 @@ namespace eightbit.GUI.Screens
         Label lblSpriteCount;
         ComboBox cmbPalettes;
         // list
-        ListBox<Data.Sprite> lstSprites;
+        ListBox<Sprite> lstSprites;
         // gfx pages
         ScrollBars scrTileGfxPages;
-        List<Elements.TileGfxPage> m_GfxPages;
+        List<TileGfxPage> m_GfxPages;
         // sprite display
-        Label lblSpriteDataByte, lblSpriteExportSize;
+        Label lblSpriteDataByte, lblSpriteMetaDataSize;
         CheckBox chkHasWalkSprites, chkHasExtendedSprites;
         ComboBox cmbSpriteSize, cmbExtraFrames;
         SingleLineTextBox txtSpriteName;
@@ -220,7 +222,7 @@ namespace eightbit.GUI.Screens
             {
                 // this is required because updating any of the controls will cause all controls to update.
                 m_SpriteDataDisplayRefreshInProgress = true;
-                Data.Sprite sprite = State.Data.Sprites[State.SelectedSprite];
+                Sprite sprite = State.Data.Sprites[State.SelectedSprite];
                 if (sprite == null)
                 {
                     txtSpriteName.Value = string.Empty;
@@ -229,7 +231,7 @@ namespace eightbit.GUI.Screens
                     cmbSpriteSize.SelectedIndex = -1;
                     cmbExtraFrames.SelectedIndex = -1;
                     lblSpriteDataByte.Value = string.Empty;
-                    lblSpriteExportSize.Value = string.Empty;
+                    lblSpriteMetaDataSize.Value = string.Empty;
                 }
                 else
                 {
@@ -238,11 +240,9 @@ namespace eightbit.GUI.Screens
                     chkHasExtendedSprites.IsToggled = sprite.HasExtendedSprites;
                     cmbSpriteSize.SelectedIndex = (int)sprite.SpriteSize;
                     cmbExtraFrames.SelectedIndex = (int)sprite.ExtraFrames;
-                    lblSpriteDataByte.Value = string.Format("Header Data: 0x{0:X2}", sprite.DataByte);
-                    lblSpriteExportSize.Value = string.Format("Export Size: {0}b{1}", 
-                        sprite.ExportSize,
-                        (sprite.ExportSize % Data.Sprites.SpriteOffsetSize != 0) ? string.Format(", waste:{0}b", 
-                        Data.Sprites.SpriteOffsetSize - sprite.ExportSize % Data.Sprites.SpriteOffsetSize) : string.Empty);
+                    lblSpriteDataByte.Value = string.Format("Header Data: 0x{0:X2}{1:X2}", sprite.DataByte, sprite.TileByte);
+                    lblSpriteMetaDataSize.Value = string.Format("Data Size: {0}b", sprite.MetaDataSize + sprite.TileTransformTable.Length * 2);
+                    int tileGfxSize = sprite.TileTransformTable.Length * 16;
                 }
                 refreshMetatileDisplay();
                 m_SpriteDataDisplayRefreshInProgress = false;
@@ -252,7 +252,7 @@ namespace eightbit.GUI.Screens
         private bool m_InvalidateAllMetatiles = false;
         private void refreshMetatileDisplay()
         {
-            Data.Sprite sprite = State.Data.Sprites[State.SelectedSprite];
+            Sprite sprite = State.Data.Sprites[State.SelectedSprite];
             if (sprite == null)
             {
                 foreach (Label l in lstMetaSpriteLabels)
@@ -288,10 +288,10 @@ namespace eightbit.GUI.Screens
                             MetaTile m = new MetaTile(i, x + i * 38, y + 18, 32, 32, Metatile_OnClick, tiles_w, tiles_h);
                             panel_CurrentSprite.AddWidget(m);
                             lstMetaSprites.Add(m);
-                            Data.SpriteTile[] tiles = sprite.GetFrame(Data.Sprite.FrameTypeEnum.Standard, i);
+                            SpriteMetaTileFrame[] tiles = sprite.GetMetaTileFrame(Sprite.FrameTypeEnum.Standard, i);
                             for (int j = 0; j < tiles.Length; j++)
                             {
-                                m.SetTile(j, tiles[j].Tile, State.SprPage().Texture);
+                                m.SetTile(j, tiles[j].Tile, State.GfxPage(tiles[j].TilePage).Texture);
                                 m.SetTileFlip(j, tiles[j].FlipH, tiles[j].FlipV);
                             }
                         }
@@ -307,10 +307,10 @@ namespace eightbit.GUI.Screens
                             MetaTile m = new MetaTile(0x100 + i, x + i * 38, y + 18, 32, 32, Metatile_OnClick, tiles_w, tiles_h);
                             panel_CurrentSprite.AddWidget(m);
                             lstMetaSprites.Add(m);
-                            Data.SpriteTile[] tiles = sprite.GetFrame(Data.Sprite.FrameTypeEnum.Extended, i);
+                            SpriteMetaTileFrame[] tiles = sprite.GetMetaTileFrame(Sprite.FrameTypeEnum.Extended, i);
                             for (int j = 0; j < tiles.Length; j++)
                             {
-                                m.SetTile(j, tiles[j].Tile, State.SprPage().Texture);
+                                m.SetTile(j, tiles[j].Tile, State.GfxPage(tiles[j].TilePage).Texture);
                                 m.SetTileFlip(j, tiles[j].FlipH, tiles[j].FlipV);
                             }
                         }
@@ -326,10 +326,10 @@ namespace eightbit.GUI.Screens
                             MetaTile m = new MetaTile(0x200 + i, x + (i % 12) * 38, y + 18 + (i / 12) * 38, 32, 32, Metatile_OnClick, tiles_w, tiles_h);
                             panel_CurrentSprite.AddWidget(m);
                             lstMetaSprites.Add(m);
-                            Data.SpriteTile[] tiles = sprite.GetFrame(Data.Sprite.FrameTypeEnum.Extra, i);
+                            SpriteMetaTileFrame[] tiles = sprite.GetMetaTileFrame(Sprite.FrameTypeEnum.Extra, i);
                             for (int j = 0; j < tiles.Length; j++)
                             {
-                                m.SetTile(j, tiles[j].Tile, State.SprPage().Texture);
+                                m.SetTile(j, tiles[j].Tile, State.GfxPage(tiles[j].TilePage).Texture);
                                 m.SetTileFlip(j, tiles[j].FlipH, tiles[j].FlipV);
                             }
                         }
@@ -392,7 +392,7 @@ namespace eightbit.GUI.Screens
 
         private void txtSpriteName_OnValueChanged(Widget widget)
         {
-            Data.Sprite sprite = State.Data.Sprites[State.SelectedSprite];
+            Sprite sprite = State.Data.Sprites[State.SelectedSprite];
             if (sprite != null)
             {
                 sprite.Name = ((TextBox)widget).Value;
@@ -401,10 +401,10 @@ namespace eightbit.GUI.Screens
 
         private void cmbSpriteSize_OnSelectionChanged(Widget widget)
         {
-            Data.Sprite sprite = State.Data.Sprites[State.SelectedSprite];
+            Sprite sprite = State.Data.Sprites[State.SelectedSprite];
             if (sprite != null)
             {
-                sprite.SpriteSize = (Data.Sprite.SpriteSizeEnum)((ComboBox)widget).SelectedIndex;
+                sprite.SpriteSize = (Sprite.SpriteSizeEnum)((ComboBox)widget).SelectedIndex;
                 m_InvalidateAllMetatiles = true;
                 refreshSpriteDataDisplay();
             }
@@ -412,17 +412,17 @@ namespace eightbit.GUI.Screens
 
         private void cmbExtraFrames_OnSelectionChanged(Widget widget)
         {
-            Data.Sprite sprite = State.Data.Sprites[State.SelectedSprite];
+            Sprite sprite = State.Data.Sprites[State.SelectedSprite];
             if (sprite != null)
             {
-                sprite.ExtraFrames = (Data.Sprite.ExtraFramesEnum)((ComboBox)widget).SelectedIndex;
+                sprite.ExtraFrames = (Sprite.ExtraFramesEnum)((ComboBox)widget).SelectedIndex;
                 refreshSpriteDataDisplay();
             }
         }
 
         private void chkHasWalkSprites_OnToggle(Widget widget)
         {
-            Data.Sprite sprite = State.Data.Sprites[State.SelectedSprite];
+            Sprite sprite = State.Data.Sprites[State.SelectedSprite];
             if (sprite != null)
             {
                 sprite.HasStandardSprites = ((CheckBox)widget).IsToggled;
@@ -432,7 +432,7 @@ namespace eightbit.GUI.Screens
 
         private void chkHasExtendedSprites_OnToggle(Widget widget)
         {
-            Data.Sprite sprite = State.Data.Sprites[State.SelectedSprite];
+            Sprite sprite = State.Data.Sprites[State.SelectedSprite];
             if (sprite != null)
             {
                 sprite.HasExtendedSprites = ((CheckBox)widget).IsToggled;
@@ -442,28 +442,30 @@ namespace eightbit.GUI.Screens
 
         private void Metatile_OnClick(Widget widget, InputEventMouse e)
         {
-            Data.Sprite sprite = State.Data.Sprites[State.SelectedSprite];
+            Sprite sprite = State.Data.Sprites[State.SelectedSprite];
             if (sprite != null)
             {
                 MetaTile metatile = (MetaTile)widget;
-                Data.Sprite.FrameTypeEnum frametype;
+                Sprite.FrameTypeEnum frametype;
                 if (metatile.Index >= 0x200)
-                    frametype = Data.Sprite.FrameTypeEnum.Extra;
+                    frametype = Sprite.FrameTypeEnum.Extra;
                 else if (metatile.Index >= 0x100)
-                    frametype = Data.Sprite.FrameTypeEnum.Extended;
+                    frametype = Sprite.FrameTypeEnum.Extended;
                 else
-                    frametype = Data.Sprite.FrameTypeEnum.Standard;
-                Data.SpriteTile tile = sprite.GetFrame(frametype, metatile.Index & 0xFF)[metatile.ClickedTile];
+                    frametype = Sprite.FrameTypeEnum.Standard;
+                SpriteMetaTileFrame tile = sprite.GetMetaTileFrame(frametype, metatile.Index & 0xFF)[metatile.ClickedTile];
                 if (e.Button == MouseButton.Left)
                 {
                     tile.Tile = (byte)State.SelectedTile;
-                    metatile.SetTile(metatile.ClickedTile, tile.Tile, State.SprPage().Texture);
+                    tile.TilePage = (byte)(State.SelectedPage);
+                    metatile.SetTile(metatile.ClickedTile, tile.Tile, State.GfxPage(tile.TilePage).Texture);
                 }
                 else if (e.Button == MouseButton.Right)
                 {
                     tile.Flip();
                     metatile.SetTileFlip(metatile.ClickedTile, tile.FlipH, tile.FlipV);
                 }
+                refreshSpriteDataDisplay();
             }
         }
     }

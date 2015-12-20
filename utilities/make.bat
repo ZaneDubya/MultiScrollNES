@@ -9,6 +9,7 @@ ophis >nul 2>nul
 if %ERRORLEVEL% neq 9009 goto ophis_exists
 echo Ophis is not installed or is not in path.
 echo Please download Ophis from http://michaelcmartin.github.io/Ophis/
+echo And add the Ophis install directory to the PATH system variable.
 pause
 exit /b
 :ophis_exists
@@ -29,6 +30,9 @@ echo %mapperdir%
 REM Delete existing work directory and create a new work directory
 if not exist %workdir% goto make_work_dir
 rmdir /s /q %workdir%
+REM wait while the directory is deleted...
+echo Cleaning OBJ folder...
+timeout /t 1 /nobreak >NUL
 :make_work_dir
 mkdir %workdir%
 
@@ -62,6 +66,8 @@ for /f "tokens=1-2 delims=," %%G in (%workdir%/prg.txt) do (
 
 if not exist bin goto move
 rmdir /s /q bin
+echo Cleaning BIN folder...
+timeout /t 1 /nobreak >NUL
 :move
 mkdir bin
 
