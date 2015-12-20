@@ -1,13 +1,13 @@
 # MultiScrollNES
 MultiScrollNES, an example multi-directional scroll engine for the Nintendo
 Entertainment System (NES). This project is released under the MIT license.
-Documentation for the various engine routines can be found in the 'reference'
+References for the various engine routines can be found in the 'documentation'
 folder.
 
 ## Eightbit.exe
-An example map editor that uses meta-tiles (2x2 NES PPU tiles) and meta-cells
-(8x8 meta-tiles) to drastically reduce the storage space required by a given
-map. Written in C#/XNA. This project is released under the MIT license.
+An example map and CHRRAM editor that uses meta-tiles (2x2 NES PPU tiles) and
+meta-cells (8x8 meta-tiles) to drastically reduce the storage space required by
+a given map. Written in C#/XNA. This project is released under the MIT license.
 
 ## If6502.exe
 A macro interpretter that allows limited use of comparison operators, bracket
