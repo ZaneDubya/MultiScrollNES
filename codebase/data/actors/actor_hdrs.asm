@@ -1,6 +1,6 @@
 ; Actortypes.asm: all the actor types and scripts.
-; for a description of this file, see ref.data\Engines\Actors.txt S 1.A.
-; this file contains 16 interleaved values.
+; for a description of this file, see ref.data\Engines\Actor Data.txt S 1.A.
+; This file contains 16 interleaved values.
 
 ActorHeaderData:                                    ; sprite data bitfield
     .byte $07, $00, $00, $00

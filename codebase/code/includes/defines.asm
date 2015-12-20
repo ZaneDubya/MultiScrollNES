@@ -1,4 +1,4 @@
-; This is the Galezie Memory Map. It is organized into three sections:
+; This is the Main Memory Map. It is organized into three sections:
 ;       * Memory Aliases
 ;       * Enumerations & Defines
 ;       * Registers

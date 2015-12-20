@@ -1,7 +1,7 @@
 .require "../includes.asm"
 
 ; =============================================================================
-;	ModeWorld: handles controls, etc, for world.
+;   ModeWorld: handles controls, etc, for world.
 ModeWorld:
 {
     jsr World_CheckScroll               ; debug - scroll on dpad
@@ -18,7 +18,7 @@ World_CheckScroll:
     bne +
     rts
 
-*	tax										; LEFT: X = X + 1
+*   tax                                     ; LEFT: X = X + 1
     and #PAD_LEFT
     beq +
     lda CameraTargetX
@@ -27,7 +27,7 @@ World_CheckScroll:
     bcc +
     inc CameraTargetX2
     
-*	txa										; RIGHT: X = X - 1
+*   txa                                     ; RIGHT: X = X - 1
     and #PAD_RIGHT
     beq +
     lda CameraTargetX
@@ -35,7 +35,7 @@ World_CheckScroll:
     sta CameraTargetX
     bcs +
     dec CameraTargetX2
-*	txa										; UP: Y = Y + 1
+*   txa                                     ; UP: Y = Y + 1
     and #PAD_UP
     beq +
     lda CameraTargetY
@@ -44,7 +44,7 @@ World_CheckScroll:
     bcc +
     inc CameraTargetY2
     
-*	txa										; UP: Y = Y - 1
+*   txa                                     ; UP: Y = Y - 1
     and #PAD_DOWN
     beq +
     lda CameraTargetY
@@ -53,39 +53,39 @@ World_CheckScroll:
     bcs +
     dec CameraTargetY2
     
-*	rts
+*   rts
 
 World_CheckController:
     lda Ctrl0_New
     bne +
     rts
     
-*	and #PAD_LEFT				; LEFT: play effect 0 on channel 0
+*   and #PAD_LEFT               ; LEFT: play effect 0 on channel 0
     beq +
     `PlaySfx 0, FT_SFX_CH0
     
-*	lda Ctrl0_New
+*   lda Ctrl0_New
     and #PAD_RIGHT
     beq +
     `PlaySample 12
     
-*	lda Ctrl0_New				; UP: play effect 1 on channel 1
+*   lda Ctrl0_New               ; UP: play effect 1 on channel 1
     and #PAD_UP
     beq +
     `PlaySfx 1, FT_SFX_CH1
     
-*	lda Ctrl0_New				; DOWN: play effect 3 on channel 3
+*   lda Ctrl0_New               ; DOWN: play effect 3 on channel 3
     and #PAD_DOWN
     beq +
     `PlaySfx 3, FT_SFX_CH3
     
-*	lda Ctrl0_New				; B: play first one
+*   lda Ctrl0_New               ; B: play first one
     and #PAD_B
     beq +
     `FT_Init MusicDataSet0
     `FT_PlaySong $00
     
-*	lda Ctrl0_New				; A: show script, play second song
+*   lda Ctrl0_New               ; A: show script, play second song
     and #PAD_A
     beq +
     ; lda #118
@@ -94,12 +94,12 @@ World_CheckController:
     `FT_Init MusicDataSet1
     `FT_PlaySong $00
     
-*	lda Ctrl0_New				; SELECT: stop music
+*   lda Ctrl0_New               ; SELECT: stop music
     and #PAD_SELECT
     beq +
-    jsr FamiToneMusicStop						
+    jsr FamiToneMusicStop                       
     
-*	lda Ctrl0_New				; START: play sfx
+*   lda Ctrl0_New               ; START: play sfx
     and #PAD_START
     beq +
     `PlaySfx 2, FT_SFX_CH2
