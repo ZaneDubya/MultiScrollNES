@@ -24,20 +24,23 @@
 ;               all data, and sets up data for the next NMI to load during
 ;               vblank. When this ends, the processor returns to NMI.
 RunOneFrame:
-    `DebugShadePPU_Shaded
     `SetGameFlag FlagMainInProcess
     
+    `DebugShadePPU_Red
     jsr FamiToneUpdate
+    `DebugShadePPU_Blue
     jsr UpdateTimers                        ; update Timer1 and Timer2
     jsr Input_Get                           ; poll gamepad
     jsr UpdateGameMode                      ; Main routine for updating game.
     
 ; Write sprites to OAM buffer.
+    `DebugShadePPU_Green
     jsr Sprite_BeginFrame
     jsr Actors_DrawActors
     jsr Sprite_EndFrame
     
 ; Load new map data
+    `DebugShadePPU_Red
     jsr MapService_LoadNewData
 
 ; Clear the flag main_in_progress and return

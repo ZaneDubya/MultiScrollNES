@@ -107,7 +107,7 @@ MapService_WriteScreen:
     sta _max_y
     
 _nextRow:
-    lda #$01                                ; load attributes, please.
+    lda #$01                                ; set 'load attributes' flag.
     jsr MapService_CreateRow                ; wipes out $00-$06
     
     lda MapBuffer_R_PPUADDR
@@ -195,7 +195,7 @@ _checkColumn:
     cmp #$C1
     beq +
     lda #$00
-*   jsr MapService_LoadCol
+*   jsr MapService_LoadCol ; wipes out $00-$08
     ldx _x
     ldy _y
 _return:

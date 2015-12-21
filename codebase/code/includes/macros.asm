@@ -1,23 +1,29 @@
 ; ==============================================================================
 ; Debug shading macros - calling these shades the output of the PPU.
 ; ==============================================================================
+.alias MaskBG_Normal        %00011000
+.alias MaskBG_Shaded        %00011001
+.alias MaskBG_Blue          %10011001
+.alias MaskBG_Green         %01011001
+.alias MaskBG_Red           %00111001
+
 .macro DebugShadePPU_Normal
-    .alias MaskBG_Normal        %00011000
     `SetByte PPU_MASK, MaskBG_Normal
 .macend
 
-.macro DebugShadePPU_Shaded
-    .alias MaskBG_Shaded        %11111000
+.macro DebugShadePPU_Grey
     `SetByte PPU_MASK, MaskBG_Shaded
 .macend
 
+.macro DebugShadePPU_Green
+    `SetByte PPU_MASK, MaskBG_Green
+.macend
+
 .macro DebugShadePPU_Red
-    .alias MaskBG_Red           %00111000
     `SetByte PPU_MASK, MaskBG_Red
 .macend
 
 .macro DebugShadePPU_Blue
-    .alias MaskBG_Blue          %10011000
     `SetByte PPU_MASK, MaskBG_Blue
 .macend
 

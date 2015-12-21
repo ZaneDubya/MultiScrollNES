@@ -5,12 +5,12 @@
 ; ==============================================================================
 ; MapService_CreateRow  Sets up a row of tiles to be copied to PPU RAM.
 ; IN    Bank should be set to bank containing chunk data.
-;       a = 0 if scrolling up, 1 if scrolling down. REALLY, this should be a load attribute flag.
 ;       x = X offset in subtiles. (0 - 63)
 ;       y = Y offset in subtiles. (0 - 63)
 ; OUT   writes 32 tiles to $70
 ; STK   Ph/Pl two bytes on stack
 ; NOTE  Takes about 26.333 scanlines to execute.
+;       Wipes out $00-$07. Must preserve $08 (used in MapService_LoadRow).
 MapService_CreateRow:
 {
     .alias  _length             $01
@@ -20,12 +20,9 @@ MapService_CreateRow:
     .alias  _lower_y_row        $05
     .alias  _ChunkPtr           $06 ; ... $07
     ; $08 is unused - but is used in CreateCol.
-    .alias  _scrollDown         $09
     
-    sta _scrollDown
     `SaveXY
     
-    ; draw the left portion of the row (on the right portion of the screen)
     txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
     lsr
     lsr
@@ -56,22 +53,23 @@ MapService_CreateRow:
     
     txa
     
-    _leftPortion:
-        and #$1f
-        sta _writeindex                 ; writeindex = x % 32
-        lda #$20                        ; 
-        sta _length                     ; length = $20
-        jsr _writeRowPortion
-    _rightPortion:
-        lda #$00
-        sta _writeindex
-        pla
-        pha                             ; a = x
-        and #$1f
-        sta _length
-        jsr _writeRowPortion
-        `RestoreXY
-        rts
+    ; write the left side of the next chunk to the 'right side' of ppu memory
+    and #$1f
+    sta _writeindex                 ; writeindex = x % 32
+    lda #$20                        ; 
+    sta _length                     ; length = $20
+    jsr _writeRowPortion
+    ; write the right side of the current chunk to the 'left side' of ppu memory
+    lda #$00
+    sta _writeindex
+    pla
+    pha                             ; a = x
+    and #$1f
+    sta _length
+    jsr _writeRowPortion
+    ; and return!
+    `RestoreXY
+    rts
 
     _writeRowPortion:
     _getChunkPointer:
@@ -87,14 +85,14 @@ MapService_CreateRow:
         and #$3f
         `addm _ChunkPtr+1
         sta _ChunkPtr+1
-    _getTile:
-        lda _length                     ; if (writeindex == length) return
-        cmp _writeindex
-        bne +
-        rts
-    *   ldy _tile
-        lda (_ChunkPtr),y
-        tay
+    _getSubTile:
+        lda _length                     ; if (writeindex == length) then return
+        cmp _writeindex                 ;   |
+        bne +                           ;   |
+        rts                             ;   +
+    *   ldy _tile                       ; y = index of metatile in chunk (0-63)
+        lda (_ChunkPtr),y               ; 
+        tay                             ; y = a = index of metatile in tileset
     ; get sub tile
         lda _lower_y_row
         bne _lower0
@@ -119,37 +117,42 @@ MapService_CreateRow:
         ; fall through to copyTile
     _copyTile:
         ldx _writeindex
-        sta MapData_RowBuffer,x
-        inc _writeindex
-        lda _writeindex         ; if ((writeindex & 1) == 1) copy second subtile
-        and #$01
-        bne _getTile            ; else
-        inc _tile               ; tile++
+        sta MapData_RowBuffer,x ; MapData_RowBuffer[x] == subtile
+        ; increment the write index to the next byte of MapData_RowBuffer.
+        ; if the incremented write index & 1 == 1, then we just wrote the
+        ; first subtile of a tile, and now we need to write the second subtile.
+        ; but we also use this value to determine if we need to write an
+        ; attribute value - we write an attribute value with the first tile.
+        inc _writeindex         ; if ((writeindex++ & 1) == 1) 
+        lda _writeindex         ;   copy a second subtile from the same tile
+        and #$01                ;   |
+        bne _getSubTile         ;   +
+*       inc _tile               ; advance to the next tile.
         lda #$07                ; if ((tile % 8) == 0)
-        and _tile
-        bne _getTile
-        lda _tile               ; tile -= 8
-        `sub $08
-        sta _tile
-        inc _chunk              ; chunk++
-        lda #$03                ; if ((chunk % 4) == 0)
-        and _chunk
-        bne _getChunkPointer
-        lda _chunk
-        `sub $04                ; chunk -= 8;
-        sta _chunk
-        jmp _getChunkPointer
+        and _tile               ; {
+        bne _getSubTile            ;
+        lda _tile               ;   tile -= 8
+        `sub $08                ;   |    
+        sta _tile               ;   +
+        inc _chunk              ;   chunk++
+        lda #$03                ;   if ((chunk % 4) == 0)
+        and _chunk              ;   {
+        bne _getChunkPointer    ;    
+        lda _chunk              ;
+        `sub $04                ;       chunk -= 8;
+        sta _chunk              ;   }
+        jmp _getChunkPointer    ; }
 }
 
 ; ==============================================================================
 ; MapService_CreateCol  Sets up a column of tiles to be copied to PPU RAM.
-; IN    Bank should be set to bank containing chunk data. REALLY, this should be a load attribute flag.
-;       a = 0 if scrolling left, 1 if scrolling right
+; IN    Bank should be set to bank containing chunk data.
 ;       X is X offset in subtiles. (0 - 63)
 ;       Y is Y offset in subtiles. (0 - 63)
 ; OUT   writes 30 tiles to MapData_ColBuffer
 ; STK   Ph/Pl two bytes on stack
 ; NOTE  Takes about 25 scanlines to execute.
+;       Wipes out $00-$07 + $09. Must preserve $08 (used in MapService_LoadCol).
 MapService_CreateCol:
 {
     .alias  _length             $01
@@ -158,10 +161,8 @@ MapService_CreateCol:
     .alias  _tile               $04
     .alias  _right_x_col        $05
     .alias  _ChunkPtr           $06 ; ... $07
-    .alias  _temp               $08
-    .alias  _scrollRight        $09
+    .alias  _temp               $09
     
-    sta _scrollRight
     `SaveXY
     
     txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
