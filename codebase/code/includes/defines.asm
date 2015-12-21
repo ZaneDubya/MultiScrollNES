@@ -162,4 +162,4 @@
 .require "defines_enums.asm"
 .require "defines_banks.asm"
 .require "defines_registers.asm"
-.require "constants_sprldr.asm"
+.require "defines_sprldr.asm"

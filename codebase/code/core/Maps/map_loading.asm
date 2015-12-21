@@ -1,7 +1,7 @@
 ; ===========================[ MapService_LoadRow ]=============================
 ; In:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
 ;       x = first visible x tile, y = first visible y tile
-;       a: 0 if load the first row (scrolling up), 1 if load the last row (down)
+;       a = 0 if load the first row (scrolling up), 1 if load the last row (down)
 ; Out:  writes 32 tiles to MapData_RowBuffer
 ; Note: wipes out $00 - $07
 MapService_LoadRow:
@@ -9,6 +9,7 @@ MapService_LoadRow:
 .alias  _ppu_addr_temp      $00
 
     pha ; save a
+    pha ; twice
     
     `Mapper_SwitchBank Bank_ChkData
     
@@ -30,7 +31,9 @@ MapService_LoadRow:
     lda _ppu_addr_temp+1
     sta MapBuffer_R_PPUADDR+1
     
-    jsr MapService_CreateRow            ; $01-$07
+    pla                                 ; a = 0 if scrolling up, 1 if down. REALLY, this should be a load attribute flag.
+    
+    jsr MapService_CreateRow            ; wipes out $00-$07
     `SetMapDataFlag MapData_HasRowData
     rts
 .scend
@@ -38,7 +41,7 @@ MapService_LoadRow:
 ; ===========================[ MapService_LoadCol ]=============================
 ; In:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
 ;       x = first visible x tile, y = first visible y tile
-;       a: 0 if load the first row (scrolling up), 1 if load the last row (down)
+;       a = 0 if load first col (scrolling left), 1 if load last col (right)
 ; Out:  writes 30 tiles to MapData_ColBuffer
 ; Note: wipes out $00 - $07
 MapService_LoadCol:
@@ -46,6 +49,7 @@ MapService_LoadCol:
 .alias  _ppu_addr_temp      $00
 
     pha ; save a
+    pha ; twice
     
     `Mapper_SwitchBank Bank_ChkData
     
@@ -77,7 +81,9 @@ MapService_LoadCol:
     lda _ppu_addr_temp+1
     sta MapBuffer_C_PPUADDR+1
     
-    jsr MapService_CreateCol            ; wipes out $01-$07
+    pla                                 ; a = 0 if scrolling left, 1 if right. REALLY, this should be a load attribute flag.
+    
+    jsr MapService_CreateCol            ; wipes out $00-$07
     `SetMapDataFlag MapData_HasColData
     rts
 .scend

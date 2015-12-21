@@ -1,10 +1,16 @@
-; ==========================[ MapService_CreateRow ]============================
-; IN:   Bank should be set to bank containing chunk data.
-;       X is X offset in subtiles. (0 - 63)
-;       Y is Y offset in subtiles. (0 - 63)
-; OUT:  writes 32 tiles to $70
-; STK:  Ph/Pl two bytes on stack
-; NOTE: Takes about 26.333 scanlines to execute.
+; Map_Creating.asm
+; Sets up rows and columns of tiles and attributes to be copied to PPU RAM
+; during the next NMI.
+
+; ==============================================================================
+; MapService_CreateRow  Sets up a row of tiles to be copied to PPU RAM.
+; IN    Bank should be set to bank containing chunk data.
+;       a = 0 if scrolling up, 1 if scrolling down. REALLY, this should be a load attribute flag.
+;       x = X offset in subtiles. (0 - 63)
+;       y = Y offset in subtiles. (0 - 63)
+; OUT   writes 32 tiles to $70
+; STK   Ph/Pl two bytes on stack
+; NOTE  Takes about 26.333 scanlines to execute.
 MapService_CreateRow:
 {
     .alias  _length             $01
@@ -13,7 +19,10 @@ MapService_CreateRow:
     .alias  _tile               $04
     .alias  _lower_y_row        $05
     .alias  _ChunkPtr           $06 ; ... $07
+    ; $08 is unused - but is used in CreateCol.
+    .alias  _scrollDown         $09
     
+    sta _scrollDown
     `SaveXY
     
     ; draw the left portion of the row (on the right portion of the screen)
@@ -41,7 +50,7 @@ MapService_CreateRow:
     ora _tile
     sta _tile
     
-    tya                             ; use lower tiles if (y & $01) == 1
+    tya                                 ; use lower tiles if (y & $01) == 1
     and #$01
     sta _lower_y_row
     
@@ -132,13 +141,15 @@ MapService_CreateRow:
         jmp _getChunkPointer
 }
 
-; ==========================[ MapService_CreateCol ]============================
-; IN:   Bank should be set to bank containing chunk data.
+; ==============================================================================
+; MapService_CreateCol  Sets up a column of tiles to be copied to PPU RAM.
+; IN    Bank should be set to bank containing chunk data. REALLY, this should be a load attribute flag.
+;       a = 0 if scrolling left, 1 if scrolling right
 ;       X is X offset in subtiles. (0 - 63)
 ;       Y is Y offset in subtiles. (0 - 63)
-; OUT:  writes 30 tiles to MapData_ColBuffer
-; STK:  Ph/Pl two bytes on stack
-; NOTE: Takes about 25 scanlines to execute.
+; OUT   writes 30 tiles to MapData_ColBuffer
+; STK   Ph/Pl two bytes on stack
+; NOTE  Takes about 25 scanlines to execute.
 MapService_CreateCol:
 {
     .alias  _length             $01
@@ -148,7 +159,9 @@ MapService_CreateCol:
     .alias  _right_x_col        $05
     .alias  _ChunkPtr           $06 ; ... $07
     .alias  _temp               $08
+    .alias  _scrollRight        $09
     
+    sta _scrollRight
     `SaveXY
     
     txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)

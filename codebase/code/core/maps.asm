@@ -3,54 +3,51 @@
 .require "Maps/map_subroutines.asm"
 .scope
 
-; =========================[ MapService_LoadTileset ]===========================
-; Loads a tileset from ROM. Currently it just loads the default tileset (at 8200
-; in bank 0) into VRAM. If I were to have more than one tileset, I would take an
-; input value as well, to determine which tileset I should load.
+; ==============================================================================
+; MapService_LoadTileset    Loads a tileset from ROM. Currently it just loads
+;                           the default tileset (at 8200 in bank 0) into VRAM.
+; IN    Nothing at the moment. Ideally this would be a byte index value - index
+;       of the tileset to load.
+; OUT   Sets up tileset addresses in ZP.
 MapService_LoadTileset:
-.scope
-.alias  _TilesetPtr     $00
-.alias  _GfxPtr         $02
-.alias  _SavePtrPtr     $04
-.alias  _TempX          $06
-
-    `SetPointer _TilesetPtr, TilesetData
-    `SetPointer _GfxPtr, Palettes       ; set the pointer to the palette data.
-    `SetPointer _SavePtrPtr, Tileset_PtrBits
+{
+    .alias  _TilesetPtr     $00
+    .alias  _GfxPtr         $02
+    .alias  _SavePtrPtr     $04
+    .alias  _TempX          $06 ; $07 free
+    .alias  _MapPalettes    $08 ; - $0b
     
-    ; load the palette indexes and tileset data pointers into zp
-    ldx #6
-*   ldy #$00
-    lda _TilesetPtr                 ; save a ptr to this data:
-    sta (_SavePtrPtr),y             ; ->bitfields, attributes, 4x gfx indexes
-    lda _TilesetPtr+1
-    iny
-    sta (_SavePtrPtr),y
-    lda #2
-    `addm _SavePtrPtr
-    sta _SavePtrPtr
-    .if x < #05                     ; only get the four pal indexes.
-    {
-        ldy #$ff                    ; get the palette data:
-        lda (_TilesetPtr),y         ; ->gfx count, pal zero, 4 pals
-        pha
-        stx _TempX
-        lda #$60
-        `subm _TempX
-        tay
-        pla
-        tax
-        stx $00,y
-        ldx _TempX
-    }
-    inc [_TilesetPtr+1]                 ; increment hi byte of pointer
-    dex                                 ; next 256 bytes of data
-    bne -
+    ; create addresses to the various kinds of data in the tileset.
+    ; Save these address to ZP at Tileset_ZP.
+    `SetPointer _TilesetPtr, TilesetData    ; base address of the tileset.
+    `SetPointer _GfxPtr, Palettes           ; base address of palettes.
+    `SetPointer _SavePtrPtr, Tileset_ZP     ; base address of tileset ZP memory.
+    ldx #6                                  ; six ptrs for six kinds of data.
+_next_ptr:
+    ldy #$00                                ; y is offset to Tileset_ZP.
+    lda _TilesetPtr                         ; save lo byte of this address.
+    sta (_SavePtrPtr),y                     ;   +
+    lda _TilesetPtr+1                       ; save hi byte of this address
+    iny                                     ;   |
+    sta (_SavePtrPtr),y                     ;   +
+    lda #2                                  ; increment ptr to ZP by 2.
+    `addm _SavePtrPtr                       ;   |
+    sta _SavePtrPtr                         ;   +
+    .if x < #05                             ; 4 palette indexes interleaved with
+    {                                       ; last 4 255 bytes of tileset data.
+        ldy #$ff                            ; get the palette index byte
+        lda (_TilesetPtr),y                 ;   +
+        sta [_MapPalettes-1],x              ; save it to _mappalettes (x is off
+    }                                       ; by one).
+    inc [_TilesetPtr+1]                     ; increment hi byte of pointer.
+    dex                                     ; next 256 bytes of data
+    bne _next_ptr
     
     ; load the four palettes
     `SetPPUAddress $3f00            ; set PPU Address to $3f00 (BG pal 0)
-    ldx #0
-*   lda $5C,x
+    ldx #3
+_next_pal:
+    lda _MapPalettes,x
     asl
     asl
     tay
@@ -65,11 +62,10 @@ MapService_LoadTileset:
     iny
     lda (_GfxPtr),y
     sta PPU_DATA
-    inx
-    cpx #$04
-    bne -
+    dex
+    bpl _next_pal
     rts
-.scend
+}
 
 ; ========================[ MapService_WriteScreen ]============================
 ; IN:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
@@ -111,6 +107,7 @@ MapService_WriteScreen:
     sta _max_y
     
 _nextRow:
+    lda #$01                                ; load attributes, please.
     jsr MapService_CreateRow                ; wipes out $00-$06
     
     lda MapBuffer_R_PPUADDR
