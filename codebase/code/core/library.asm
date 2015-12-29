@@ -161,3 +161,40 @@ Divide8:
     rol Numerator
     ldx Numerator
     rts
+    
+;-----------------------------[ 8bit Modulus by 15 ]----------------------------
+; 8bit modulus by 15. Based on an algorithm by Douglas W. Jones
+; http://homepage.cs.uiowa.edu/~jones/bcd/mod.shtml
+; IN    A = value
+; OUT   A = remainder
+Mod15:
+{
+    ; a = (a >>  4) + (a & 0xF);    /* sum base 2**4 digits */
+    pha
+    clc
+    lsr
+    lsr
+    lsr
+    lsr
+    sta Mod15Temp
+    pla
+    and #$0f
+    clc
+    adc Mod15Temp
+    ; if (a < 15) return a;
+    cmp #$10
+    bcs _gt15
+    rts
+_gt15:
+    ; if (a < (2 * 15)) return a - 15;
+    cmp #$1f
+    bcs _gt30
+    sec
+    sbc #$0f
+    rts
+_gt30:
+    ; return a - (2 * 15);
+    sec
+    sbc #$1e
+    rts
+}

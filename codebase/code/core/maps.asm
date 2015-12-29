@@ -70,7 +70,7 @@ _next_pal:
 ; ========================[ MapService_WriteScreen ]============================
 ; IN:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
 ; OUT:  Writes an entile screen into VRAM.
-; NOTE: Wipes out $00-$09 in zp
+; NOTE: Wipes out $00-$09,$10-$1f in zp
 ;       Writes to VRAM - SCREEN MUST BE OFF!
 ; STK:  Uses 2 bytes of stack space.
 MapService_WriteScreen:
@@ -107,8 +107,8 @@ MapService_WriteScreen:
     sta _max_y
     
 _nextRow:
-    lda #$01                                ; set 'load attributes' flag.
-    jsr MapService_CreateRow                ; wipes out $00-$06
+    lda #$01                                ; set 'load attributes' flag always.
+    jsr MapService_WriteRow                 ; wipes out $00-$07, preserves x y
     
     lda MapBuffer_R_PPUADDR
     sta PPU_ADDR
@@ -124,14 +124,14 @@ _nextRow:
     bne -
     ldx _x
     
-    lda MapBuffer_R_PPUADDR+1                   ; increment ppu address by $20
+    lda MapBuffer_R_PPUADDR+1               ; increment ppu address by $20
     `add $20
     sta MapBuffer_R_PPUADDR+1
     bcc +
     inc MapBuffer_R_PPUADDR                 ; if ppu_lo carried, incrememt ppu_hi
     
 ; wrap ppu address at $23c0
-*   lda #$23                            ; if ppu_hi == $23, and ppu_lo >= $c0
+*   lda #$23                                ; if ppu_hi == $23, and ppu_lo >= $c0
     cmp MapBuffer_R_PPUADDR                 ; ppu_hi = $20, and ppu_lo -= $c0
     bne +
     lda MapBuffer_R_PPUADDR+1
@@ -146,7 +146,19 @@ _nextRow:
 *   iny
     cpy _max_y
     bne _nextRow
-
+    
+    lda #$23
+    sta PPU_ADDR
+    lda #$C0
+    sta PPU_ADDR
+    ldx #$00
+    _forx:
+    lda MapData_Attributes,x
+    sta PPU_DATA
+    inx
+    cpx #$40
+    bne _forx
+    
     rts
 .scend
 
@@ -299,7 +311,7 @@ _delta_y:
     `addm delta
     .if a >= #240
     {
-        ldx delta_hi
+        ldx delta_hi ; if the delta is < 0
         .if x == #$ff
         {
             `add 240

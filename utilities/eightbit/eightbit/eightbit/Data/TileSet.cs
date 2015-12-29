@@ -1,4 +1,5 @@
-﻿using eightbit.Data.TileSetData;
+﻿using Core;
+using eightbit.Data.TileSetData;
 using System;
 using System.Collections.Generic;
 
@@ -107,7 +108,7 @@ namespace eightbit.Data
             }
         }
 
-        public bool Unserialize(Core.BinaryFileReader reader)
+        public bool Unserialize(BinaryFileReader reader)
         {
             string id = reader.ReadString();
             if (id != c_SerializeIdentifier)
@@ -147,7 +148,7 @@ namespace eightbit.Data
             return true;
         }
 
-        public void Serialize(Core.BinaryFileWriter writer)
+        public void Serialize(BinaryFileWriter writer)
         {
             m_Tilegfx.Consolidate(m_Metatiles);
 
@@ -179,7 +180,7 @@ namespace eightbit.Data
             }
         }
 
-        public void Export(Core.BinaryFileWriter writer)
+        public void Export(BinaryFileWriter writer)
         {
             m_Tilegfx.Consolidate(m_Metatiles);
 

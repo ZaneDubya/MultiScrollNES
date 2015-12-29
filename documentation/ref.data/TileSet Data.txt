@@ -8,7 +8,7 @@ TileSet banks (4 TileSets per bank, 800 left over)
 	Each tileset is 1848b, organized as follows:
 	255 MetaTile bitfields
 	1b pal index zero
-	255 MetaTile attributes
+	255 MetaTile attributes (two bits)
 	1b palette 0
 	255 MetaTile graphics UL
 	1b palette 1

@@ -12,19 +12,19 @@
 .macend
 
 .macro DebugShadePPU_Grey
-    `SetByte PPU_MASK, MaskBG_Shaded
+    ;`SetByte PPU_MASK, MaskBG_Shaded
 .macend
 
 .macro DebugShadePPU_Green
-    `SetByte PPU_MASK, MaskBG_Green
+    ;`SetByte PPU_MASK, MaskBG_Green
 .macend
 
 .macro DebugShadePPU_Red
-    `SetByte PPU_MASK, MaskBG_Red
+    ;`SetByte PPU_MASK, MaskBG_Red
 .macend
 
 .macro DebugShadePPU_Blue
-    `SetByte PPU_MASK, MaskBG_Blue
+    ;`SetByte PPU_MASK, MaskBG_Blue
 .macend
 
 ; ==============================================================================

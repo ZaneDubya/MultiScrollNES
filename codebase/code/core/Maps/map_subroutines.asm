@@ -1,10 +1,135 @@
-.require "map_creating.asm"
+.require "map_writing.asm"
 .require "map_loading.asm"
 
-Map_GetFirstSubTilesInXY:
-; in:   X and Y scroll values.
-; out:  X and Y registers contain the first visible subtile (0 - 63).
+; ==============================================================================
+; IN:   a = 0 if row, 1 if col.
+;       x = X offset in subtiles. (0 - 63)
+;       y = Y offset in subtiles. (0 - 63)
+;       16 2-bit attribute values in $0010-$001f
+; OUT:  Writes passed attributes into appropriate bytes of MapData_Attributes
+MapService_UpdateAttrBuffer:
+{
+    .alias  _byte           $01
+    .alias  _shift          $02
+    .alias  _y_col          $03
+    .alias  _do_cols        $04
+    .alias  _y              $05
+    .alias  _shifted        $06
+    
+    sta _do_cols
+    `SaveXY
+    
+    ; each attribute table can hold only 15 metatile rows. because each
+    ; superchunk is 16 metatile rows, we need to offset the attribute row we
+    ; are writing to by (rows % 15).
+    tya
+    lda CameraCurrentY
+    clc
+    lsr
+    lsr
+    lsr
+    lsr
+    clc
+    adc CameraCurrentY2
+    jsr Mod15               ; a = a % 15
+    sta _y_col
+    and #$1f
+    clc
+    lsr                     ; a = a / 2
+    clc
+    adc _y_col             ; _y_col = ((y & $1f) / 2) + ((yhi + y / 16) % 15)
+    
+    ; shift value to sub attribute bits: (y & 2) * 2 + (x & 2): 0, 2, 4, or 6.
+    ; I normalize this to 0, 1, 2, or 3.
+    tya 
+    and #$02
+    sta _shift
+    txa
+    and #$02
+    asl
+    ora _shift
+    sta _shift ; shift = 0, 1, 2, or 3.
+    
+    ; address of attribute byte = ((x & $1f) / 4) + (((y & $1f) / 4) * 8): 0-63
+    txa
+    and #$1f
+    lsr
+    lsr
+    sta _byte ; byte = x & $1f / 4
+    tya
+    clc
+    adc _y_col
+    and #$1c
+    clc
+    asl
+    ora _byte
+    sta _byte ; byte = x & $1f / 4 + (y & $1f / 4) * 8 - is this necessary? we are just loading to x...
+    
+    ; x = index of the first attribute byte
+    ldx _byte
+    
+    ldy #$ff                ; for (y = 0; y < 16; y++)
+_fory:                      ; {
+    iny                     ;
+    cpy #$10                ;
+    beq _end_fory           ;    
+    lda $10,y                   ; a = attr_row[y]
+    sty _y
+    jsr _shift_bits             ; shift a by _shift * 2 bits, wipes out y.
+    sta _shifted                ; _shifted = a
+    lda MapData_Attributes,x    ; a = attr[x]
+    and _save_bits,y            ; a &= save_bits[_shift] (y is set in _shift_bits)
+    ldy _y
+    ora _shifted                ; a |= shifted.
+    sta MapData_Attributes,x    ; attr[x] = a
+    lda _shift                  ; _shift += 2
+    eor #$01                    ;
+    sta _shift                  ;
+    and #$01                    ;
+    bne _fory                   ; if (_shift bit 0 is 0, we just advanced a tile) {
+    txa                         ;     if (x & 7 == 7)
+    and #$07                    ;
+    cmp #$07                    ;
+    bne _inc_x                  ;    
+    txa                         ;         x &= ^7
+    and #$f8                    ;
+    tax                         ;
+    jmp _fory                   ;    
+    _inc_x:                     ;       else
+    inx                         ;           x += 1;
+    jmp _fory                   ; }
+_end_fory:                 ; }
+    `RestoreXY
+    rts
+
+_shift_bits:
+    ldy _shift
+    beq _shift_0
+    cpy #$2
+    beq _shift_4
+    bcc _shift_2
+_shift_6:
+    asl
+    asl
+_shift_4:
+    asl
+    asl
+_shift_2:
+    asl
+    asl
+_shift_0:
+    rts
+_save_bits:
+.byte   $FC, $F3, $CF, $3F
+}
+
+
+; ==============================================================================
+; Map_GetFirstSubTilesInXY
+; IN:   X and Y scroll values.
+; OUT:  X and Y registers contain the first visible subtile (0 - 63).
 ;       A also contains Y
+Map_GetFirstSubTilesInXY:
 {
     .alias  _x                  $00
 
@@ -40,10 +165,13 @@ Map_GetFirstSubTilesInXY:
     rts
 }
 
+; ==============================================================================
+; Map_GetPPUOffsetFromRow
+; IN:   a = y row.
+; OUT:  Gets the PPU Address to the first tile in the specified row.
+; adds this to MapBuffer_PPUADDR
 Map_GetPPUOffsetFromRow:
 {
-; in: Y row in A. Gets the PPU Address to the first tile in the specified row.
-; adds this to MapBuffer_PPUADDR
     .alias  _ppu_addr_temp      $00
     .alias  _x                  $02
         sta _x
@@ -74,10 +202,11 @@ Map_GetPPUOffsetFromRow:
         rts
 }
 
-; =====================[ MapService_GetSuperChunkPointer ]======================
+; ==============================================================================
+; MapService_GetSuperChunkPointer
 ; IN:   Superchunk loaded from X and Y.
 ; Out:  Pointer to SuperChunk in $00,$01.
-; Note: Currently set up for 16x16 superchunk arrays. An additional asl after
+; NOTE: Currently set up for 16x16 superchunk arrays. An additional asl after
 ;       loading Y will make this good for 32x32 data.
 MapService_GetSuperChunkPointer:
 {
@@ -109,7 +238,8 @@ MapService_GetSuperChunkPointer:
         rts
 }
 
-; ===================[ MapService_CheckLoadedSuperChunks ]======================
+; ==============================================================================
+; MapService_CheckLoadedSuperChunks
 ; If new superchunks should be loaded, based on the scroll values, load them.
 ; In: Scroll values.
 ; Wipes out a,x,y,$00,$01
@@ -147,8 +277,8 @@ MapService_CheckLoadedSuperChunks:
         rts
 }
 
-; =======================[ MapService_LoadSuperChunk ]==========================
-; Loads superchunk data into memory.
+; ==============================================================================
+; MapService_LoadSuperChunk - Loads superchunk data into memory.
 ; IN: Superchunk to load from X and Y.
 MapService_LoadSuperChunk:
 {
@@ -219,7 +349,7 @@ MapService_LoadSuperChunk:
         rts
 }
 
-; =========================[ MapService_BoundTarget ]===========================
+; ==============================================================================
 ; bounds a point at x=$00-$01,y=$02-$03 to the CameraBound variables.
 MapService_BoundTarget:
 {

@@ -4,10 +4,9 @@
 ;       * Registers
 ; ================================ Memory Aliases ==============================
 ; $000x - Scratch space. Any routine can overwrite these.
+; $001x - Scratch space. Any routine can overwrite these.
 
-; $001x - FREE. AVAILABLE: ALL (16)
-
-; $002x - core variables. AVILABILE: $2C-$2F (4).
+; $002x - core variables. AVAILABILE: $2C-$2F (4).
 .alias  GameMode            $0020
 .alias  GameFlags           $0021
 .alias  BankIn8000          $0022
@@ -28,6 +27,7 @@
 .alias  Timer2              $0033   ; Decremented every 10 frames after set.
 .alias  Multiplier          $0034
 .alias  Numerator           $0034
+.alias  Mod15Temp           $0034
 .alias  Multiplicand        $0035
 .alias  Denominator         $0035
 .alias  MultiplySum         $0035
@@ -65,17 +65,21 @@
 .alias  MapBuffer_Last_Y    MapBuffer+$03
 .alias  MapBuffer_C_PPUADDR MapBuffer+$04
 .alias  MapBuffer_R_PPUADDR MapBuffer+$06
+.alias  MapBuffer_CA_PPUADDR MapBuffer+$04
+.alias  MapBuffer_RA_PPUADDR MapBuffer+$06
 .alias  MapBuffer_Flags     MapBuffer+$08   ; see MapData enum
-;AVAILABLE: $0059 - $005B (3 bytes)
+.alias  MapBuffer_RA_Index  MapBuffer+$09
+.alias  MapBuffer_CA_Index  MapBuffer+$0A
+;$005B - Available.
 .alias  SprPalette0         MapBuffer+$0C   ; Sprite Pal 0
 .alias  SprPalette1         MapBuffer+$0D   ; Sprite Pal 1
 .alias  SprPalette2         MapBuffer+$0E   ; Sprite Pal 2
 .alias  SprPalette3         MapBuffer+$0F   ; Sprite Pal 3
 .alias  MapData_RowBuffer   MapBuffer+$10   ; $006x Buffers for VBLANK PPU data.
 .alias  MapData_ColBuffer   MapBuffer+$30   ; $008x Buffers for VBLANK PPU data.
-.alias  MapData_RowAttrBuf  MapBuffer+$50   ; $00Ax Buffers for VBLANK PPU data.
-.alias  MapData_ColAttrBuf  MapBuffer+$58   ; $00Ax Buffers for VBLANK PPU data.
-.alias  MapData_Chunks      MapBuffer+$60   ; $00Bx Indexes of on-screen superchunks.
+.alias  MapData_Chunks      MapBuffer+$50   ; $00Ax Indexes of on-screen superchunks.
+
+; $00Bx - available.
 
 ; $00Cx - The currently loaded tileset
 .alias  Tileset_ZP          $00C0
@@ -141,6 +145,9 @@
 .alias  SprLdr_UsageCounts      $0410 
 .alias  SprLdr_TileAddressesLo  $0420
 .alias  SprLdr_TileAddressesHi  $0428
+; $043x - available
+.alias  MapData_Attributes      $0440   ; $40 bytes - attribute table 0
+; $0480 - $04ff is AVAILABLE.
 
 ; $05xx - AVAILABLE.
 

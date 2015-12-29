@@ -3,11 +3,10 @@
 ;       x = first visible x tile, y = first visible y tile
 ;       a = 0 if load the first row (scrolling up), 1 if load the last row (down)
 ; Out:  writes 32 tiles to MapData_RowBuffer
-; Note: wipes out $00 - $09
+; Note: wipes out $00 - $08
 MapService_LoadRow:
 {
     .alias  _ppu_addr_temp      $00
-    .alias  _ppu_addr_lo        $08    
 
     pha ; save a
     pha ; twice
@@ -29,35 +28,33 @@ MapService_LoadRow:
 *   jsr Map_GetPPUOffsetFromRow         ; $00-$02
     lda _ppu_addr_temp
     sta MapBuffer_R_PPUADDR
-    sta _ppu_addr_lo
     lda _ppu_addr_temp+1
     sta MapBuffer_R_PPUADDR+1
-
-    ; load the row
-    jsr MapService_CreateRow            ; wipes out $00-$07, preserves $08.
-    `SetMapDataFlag MapData_HasRowData
     
     ; load attribute bits when (1) scrolling up and (ppu address & $0020) == 0,
     ; (2) scrolling down and (ppu address & $0020) == $20.
     pla                                 ; a = 0 if scrolling up, 1 if down.
-    ;bne _scroll_down
+    bne _scroll_down
     
     ; scrolling up
-    ;lda _ppu_addr_temp      ; if (_ppu_addr & $20 == 0)
-    ;and #$20                ;   write attribute
-    ;bne _return             ; else return.
-    ; write attribute!
-    ;rts
+    lda _ppu_addr_temp      ; if (_ppu_addr & $20 == 0)
+    and #$20                ;   write attribute
+    bne _load_row           ; 
+    lda #$01
+    bne _load_row
     
     ; scrolling down
-    ;_scroll_down:
-    ;lda _ppu_addr_temp      ; if (_ppu_addr & $20 == 0)
-    ;and #$20                ;   write attribute
-    ;beq _return             ; else return.
-    ; write attribute!
-    rts
+    _scroll_down:
+    lda _ppu_addr_temp      ; if (_ppu_addr & $20 == 0)
+    and #$20                ;   write attribute
+    beq _load_row           ;
+    lda #$01                ; fall through to _load_row
+
+    ; load the row
+    _load_row:
+    jsr MapService_WriteRow            ; wipes out $00-$07, preserves x y
+    `SetMapDataFlag MapData_HasRowData
     
-_return:
     rts
 }
 
@@ -66,11 +63,10 @@ _return:
 ;       x = first visible x tile, y = first visible y tile
 ;       a = 0 if load first col (scrolling left), 1 if load last col (right)
 ; Out:  writes 30 tiles to MapData_ColBuffer
-; Note: wipes out $00 - $08
+; Note: wipes out $00 - $09
 MapService_LoadCol:
 {
     .alias  _ppu_addr_temp      $00
-    .alias  _ppu_addr_lo        $08    
 
     pha ; save a
     pha ; twice
@@ -102,12 +98,12 @@ MapService_LoadCol:
     
 *   lda _ppu_addr_temp
     sta MapBuffer_C_PPUADDR
-    sta _ppu_addr_lo
     lda _ppu_addr_temp+1
     sta MapBuffer_C_PPUADDR+1
     
     ; load the column
-    jsr MapService_CreateCol            ; wipes out $00-$07+$09, preserves $08.
+    lda #$00                            ; debug - do not load attributes.
+    jsr MapService_WriteCol            ; wipes out $00-$07+$09, preserves $08.
     `SetMapDataFlag MapData_HasColData
     
     ; load attribute bits

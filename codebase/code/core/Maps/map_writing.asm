@@ -1,26 +1,31 @@
-; Map_Creating.asm
+; MapService_Write.asm
 ; Sets up rows and columns of tiles and attributes to be copied to PPU RAM
 ; during the next NMI.
 
 ; ==============================================================================
-; MapService_CreateRow  Sets up a row of tiles to be copied to PPU RAM.
+; MapService_WriteRow  Sets up a row of tiles to be copied to PPU RAM.
 ; IN    Bank should be set to bank containing chunk data.
+;       a = load attributes
 ;       x = X offset in subtiles. (0 - 63)
 ;       y = Y offset in subtiles. (0 - 63)
-; OUT   writes 32 tiles to $70
+; OUT   writes 32 byte tile indexes to $0070 - $008f
+;       writes 16 2bit attributes to $0010 - $001f
 ; STK   Ph/Pl two bytes on stack
 ; NOTE  Takes about 26.333 scanlines to execute.
-;       Wipes out $00-$07. Must preserve $08 (used in MapService_LoadRow).
-MapService_CreateRow:
+;       Wipes out $01-$08
+MapService_WriteRow:
 {
     .alias  _length             $01
     .alias  _writeindex         $02
     .alias  _chunk              $03
     .alias  _tile               $04
     .alias  _lower_y_row        $05
-    .alias  _ChunkPtr           $06 ; ... $07
-    ; $08 is unused - but is used in CreateCol.
+    .alias  _ChunkPtr           $06
+    .alias  _ChunkPtrHi         $07
+    .alias  _do_attributes      $08    
+    .alias  _attributebuffer    $10
     
+    sta _do_attributes
     `SaveXY
     
     txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
@@ -67,8 +72,10 @@ MapService_CreateRow:
     and #$1f
     sta _length
     jsr _writeRowPortion
-    ; and return!
+    ; restore x and y, and update the attribute buffer.
     `RestoreXY
+    lda #$00
+    jsr MapService_UpdateAttrBuffer
     rts
 
     _writeRowPortion:
@@ -80,11 +87,11 @@ MapService_CreateRow:
         `addm _ChunkPtr
         sta _ChunkPtr
         bcc +
-        inc _ChunkPtr+1
+        inc _ChunkPtrHi
     *   lda MapData_Chunks,x
         and #$3f
-        `addm _ChunkPtr+1
-        sta _ChunkPtr+1
+        `addm _ChunkPtrHi
+        sta _ChunkPtrHi
     _getSubTile:
         lda _length                     ; if (writeindex == length) then return
         cmp _writeindex                 ;   |
@@ -93,26 +100,40 @@ MapService_CreateRow:
     *   ldy _tile                       ; y = index of metatile in chunk (0-63)
         lda (_ChunkPtr),y               ; 
         tay                             ; y = a = index of metatile in tileset
-    ; get sub tile
+    ; read subtile based on which corner of the metatile we are writing.
         lda _lower_y_row
-        bne _lower0
+        bne _lower
         lda _writeindex
         and #$01
-        bne _ur0
-    _ul0:
-        lda (Tileset_PtrUL),y
+        bne _ur
+    _ul:
+        lda _do_attributes              ; if (_do_attributes != 0)
+        beq +                           ; {
+        lda _writeindex                 ;   x = _writeindex / 2
+        lsr                             ;
+        tax                             ;    
+        lda (Tileset_PtrAttribs),y      ;   a = Tileset_PtrAttribs[y]
+        sta _attributebuffer,x          ;   _attributebuffer[x] = a
+*       lda (Tileset_PtrUL),y
         jmp _copyTile
-    _ur0:
+    _ur:
         lda (Tileset_PtrUR),y
         jmp _copyTile
-    _lower0:
+    _lower:
         lda _writeindex
         and #$01
-        bne _lr0
-    _ll0:
-        lda (Tileset_PtrLL),y
+        bne _lr
+    _ll:
+        lda _do_attributes              ; if (_do_attributes != 0)
+        beq +                           ; {
+        lda _writeindex                 ;   x = _writeindex / 2
+        lsr                             ;
+        tax                             ;    
+        lda (Tileset_PtrAttribs),y      ;   a = Tileset_PtrAttribs[y]
+        sta _attributebuffer,x          ;   _attributebuffer[x] = a
+*       lda (Tileset_PtrLL),y
         jmp _copyTile
-    _lr0:
+    _lr:
         lda (Tileset_PtrLR),y
         ; fall through to copyTile
     _copyTile:
@@ -137,32 +158,36 @@ MapService_CreateRow:
         inc _chunk              ;   chunk++
         lda #$03                ;   if ((chunk % 4) == 0)
         and _chunk              ;   {
-        bne _getChunkPointer    ;    
-        lda _chunk              ;
+        beq +                   ;
+        jmp _getChunkPointer    ;    
+*       lda _chunk              ;
         `sub $04                ;       chunk -= 8;
         sta _chunk              ;   }
         jmp _getChunkPointer    ; }
 }
 
 ; ==============================================================================
-; MapService_CreateCol  Sets up a column of tiles to be copied to PPU RAM.
+; MapService_WriteCol  Sets up a column of tiles to be copied to PPU RAM.
 ; IN    Bank should be set to bank containing chunk data.
 ;       X is X offset in subtiles. (0 - 63)
 ;       Y is Y offset in subtiles. (0 - 63)
 ; OUT   writes 30 tiles to MapData_ColBuffer
 ; STK   Ph/Pl two bytes on stack
 ; NOTE  Takes about 25 scanlines to execute.
-;       Wipes out $00-$07 + $09. Must preserve $08 (used in MapService_LoadCol).
-MapService_CreateCol:
+;       Wipes out $01-$09.
+MapService_WriteCol:
 {
     .alias  _length             $01
     .alias  _writeindex         $02
     .alias  _chunk              $03
     .alias  _tile               $04
     .alias  _right_x_col        $05
-    .alias  _ChunkPtr           $06 ; ... $07
+    .alias  _ChunkPtr           $06
+    .alias  _ChunkPtrHi         $07
+    .alias  _do_attributes      $08    
     .alias  _temp               $09
     
+    sta _do_attributes
     `SaveXY
     
     txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
@@ -220,11 +245,11 @@ MapService_CreateCol:
         `addm _ChunkPtr
         sta _ChunkPtr
         bcc +
-        inc _ChunkPtr+1
+        inc _ChunkPtrHi
     *   lda MapData_Chunks,x
         and #$3f
-        `addm _ChunkPtr+1
-        sta _ChunkPtr+1
+        `addm _ChunkPtrHi
+        sta _ChunkPtrHi
     _getTile:
     *   ldy _tile
         lda (_ChunkPtr),y
