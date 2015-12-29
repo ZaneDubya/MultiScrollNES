@@ -25,7 +25,7 @@ MapService_LoadRow:
     `add $1d                            ;   |
     tay                                 ;   *
     
-*   jsr Map_GetPPUOffsetFromRow         ; $00-$02
+*   jsr Map_GetPPUOffsetFromRow         ; wipes $00-$02
     lda _ppu_addr_temp
     sta MapBuffer_R_PPUADDR
     lda _ppu_addr_temp+1
@@ -35,24 +35,22 @@ MapService_LoadRow:
     ; (2) scrolling down and (ppu address & $0020) == $20.
     pla                                 ; a = 0 if scrolling up, 1 if down.
     bne _scroll_down
+    lda CameraCurrentY
+    and #$08
+    beq _load_attributes
+    lda #$00
+    beq _load_row
     
-    ; scrolling up
-    lda _ppu_addr_temp      ; if (_ppu_addr & $20 == 0)
-    and #$20                ;   write attribute
-    bne _load_row           ; 
-    lda #$01
-    bne _load_row
-    
-    ; scrolling down
     _scroll_down:
-    lda _ppu_addr_temp      ; if (_ppu_addr & $20 == 0)
-    and #$20                ;   write attribute
-    beq _load_row           ;
-    lda #$01                ; fall through to _load_row
-
-    ; load the row
+    lda CameraCurrentY
+    and #$08
+    beq _load_row
+    
+    _load_attributes:
+    lda #$01
+    
     _load_row:
-    jsr MapService_WriteRow            ; wipes out $00-$07, preserves x y
+    jsr MapService_WriteRow            ; wipes out $01-$07, preserves x y
     `SetMapDataFlag MapData_HasRowData
     
     rts

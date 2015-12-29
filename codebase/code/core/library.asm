@@ -163,9 +163,9 @@ Divide8:
     rts
     
 ;-----------------------------[ 8bit Modulus by 15 ]----------------------------
-; 8bit modulus by 15. Based on an algorithm by Douglas W. Jones
+; Fast 8bit modulus by 15. Based on an algorithm by Douglas W. Jones
 ; http://homepage.cs.uiowa.edu/~jones/bcd/mod.shtml
-; IN    A = value
+; IN    A = input value
 ; OUT   A = remainder
 Mod15:
 {
@@ -182,12 +182,12 @@ Mod15:
     clc
     adc Mod15Temp
     ; if (a < 15) return a;
-    cmp #$10
+    cmp #$0f
     bcs _gt15
     rts
 _gt15:
     ; if (a < (2 * 15)) return a - 15;
-    cmp #$1f
+    cmp #$1e
     bcs _gt30
     sec
     sbc #$0f

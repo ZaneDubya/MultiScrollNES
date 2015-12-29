@@ -5,7 +5,7 @@
 ; ==============================================================================
 ; MapService_WriteRow  Sets up a row of tiles to be copied to PPU RAM.
 ; IN    Bank should be set to bank containing chunk data.
-;       a = load attributes
+;       a = load attributes if == 1.
 ;       x = X offset in subtiles. (0 - 63)
 ;       y = Y offset in subtiles. (0 - 63)
 ; OUT   writes 32 byte tile indexes to $0070 - $008f
@@ -74,9 +74,10 @@ MapService_WriteRow:
     jsr _writeRowPortion
     ; restore x and y, and update the attribute buffer.
     `RestoreXY
-    lda #$00
+    lda _do_attributes
+    beq +
     jsr MapService_UpdateAttrBuffer
-    rts
+*   rts
 
     _writeRowPortion:
     _getChunkPointer:

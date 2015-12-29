@@ -27,13 +27,13 @@
 .alias  Timer2              $0033   ; Decremented every 10 frames after set.
 .alias  Multiplier          $0034
 .alias  Numerator           $0034
-.alias  Mod15Temp           $0034
 .alias  Multiplicand        $0035
 .alias  Denominator         $0035
 .alias  MultiplySum         $0035
 .alias  MultiplySumHi       $0036
 .alias  ErrorAddr           $0037
 .alias  ErrorAddrHi         $0038
+.alias  Mod15Temp           $0034
 
 .alias  OamCurrentSprChk    $003D
 .alias  OamCurrentIndex     $003E
@@ -65,11 +65,9 @@
 .alias  MapBuffer_Last_Y    MapBuffer+$03
 .alias  MapBuffer_C_PPUADDR MapBuffer+$04
 .alias  MapBuffer_R_PPUADDR MapBuffer+$06
-.alias  MapBuffer_CA_PPUADDR MapBuffer+$04
-.alias  MapBuffer_RA_PPUADDR MapBuffer+$06
 .alias  MapBuffer_Flags     MapBuffer+$08   ; see MapData enum
-.alias  MapBuffer_RA_Index  MapBuffer+$09
-.alias  MapBuffer_CA_Index  MapBuffer+$0A
+.alias  MapBuffer_RA_Index  MapBuffer+$09   ; Attribute Row Index.
+.alias  MapBuffer_CA_Index  MapBuffer+$0A   ; Attribute Column Index.
 ;$005B - Available.
 .alias  SprPalette0         MapBuffer+$0C   ; Sprite Pal 0
 .alias  SprPalette1         MapBuffer+$0D   ; Sprite Pal 1

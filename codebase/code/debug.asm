@@ -51,11 +51,9 @@ _Return:
 Debug_LoadMap:
     ; Load Debug Map
     `SetByte Screen_X, 0
-    ;`SetByte Scroll_X2, 0
-    ;`SetByte Scroll_Y, 0
-    ;`SetByte Scroll_Y2, 0
     `SetByte Screen_Y, 0
     `SetByte CameraCurrentY, 0
+    `SetByte CameraCurrentY2, 0
     `SetByte CameraTargetY,$70
     `SetByte CameraTargetY2,$FF
     `SetByte CameraBoundR, $ff
@@ -63,7 +61,9 @@ Debug_LoadMap:
     `SetByte CameraBoundB, $ff
     `SetByte CameraBoundB2, $0f
     `SetByte MapBuffer_SC_UL_X, $ff     ; MapService will load all superchunks
-    jsr MapService_WriteScreen          ; load a screen of tiless into vram
+    jsr MapService_WriteScreen          ; load a screen of tiles into vram
+    `SetByte CameraCurrentY, 0
+    `SetByte CameraCurrentY2, 0
     rts
 
 ; ==============================================================================

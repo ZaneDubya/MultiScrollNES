@@ -2,8 +2,7 @@
 .require "map_loading.asm"
 
 ; ==============================================================================
-; IN:   a = 0 if row, 1 if col.
-;       x = X offset in subtiles. (0 - 63)
+; IN:   x = X offset in subtiles. (0 - 63)
 ;       y = Y offset in subtiles. (0 - 63)
 ;       16 2-bit attribute values in $0010-$001f
 ; OUT:  Writes passed attributes into appropriate bytes of MapData_Attributes
@@ -11,19 +10,16 @@ MapService_UpdateAttrBuffer:
 {
     .alias  _byte           $01
     .alias  _shift          $02
-    .alias  _y_col          $03
-    .alias  _do_cols        $04
-    .alias  _y              $05
-    .alias  _shifted        $06
+    .alias  _y_attr         $03
+    .alias  _y              $04
+    .alias  _shifted        $05
     
-    sta _do_cols
     `SaveXY
     
     ; each attribute table can hold only 15 metatile rows. because each
     ; superchunk is 16 metatile rows, we need to offset the attribute row we
     ; are writing to by (rows % 15).
-    tya
-    lda CameraCurrentY
+    lda CameraCurrentY      ; _y_attr = (ccy >> 4 + ccyh) % 15
     clc
     lsr
     lsr
@@ -31,17 +27,12 @@ MapService_UpdateAttrBuffer:
     lsr
     clc
     adc CameraCurrentY2
-    jsr Mod15               ; a = a % 15
-    sta _y_col
-    and #$1f
-    clc
-    lsr                     ; a = a / 2
-    clc
-    adc _y_col             ; _y_col = ((y & $1f) / 2) + ((yhi + y / 16) % 15)
+    jsr Mod15
+    sta _y_attr
     
     ; shift value to sub attribute bits: (y & 2) * 2 + (x & 2): 0, 2, 4, or 6.
     ; I normalize this to 0, 1, 2, or 3.
-    tya 
+    asl
     and #$02
     sta _shift
     txa
@@ -56,17 +47,19 @@ MapService_UpdateAttrBuffer:
     lsr
     lsr
     sta _byte ; byte = x & $1f / 4
-    tya
-    clc
-    adc _y_col
-    and #$1c
+    lda _y_attr
+    and #$fe
     clc
     asl
+    asl
     ora _byte
-    sta _byte ; byte = x & $1f / 4 + (y & $1f / 4) * 8 - is this necessary? we are just loading to x...
+    tax ; x = index of the first attribute byte
     
-    ; x = index of the first attribute byte
-    ldx _byte
+    ; MapBuffer_RA_Index is the low byte of PPU_ADDR that attr will be written to.
+    and #$f8 ; mask out lower three bits - write an entire row at a time.
+    clc
+    adc #$c0
+    sta MapBuffer_RA_Index
     
     ldy #$ff                ; for (y = 0; y < 16; y++)
 _fory:                      ; {
@@ -131,7 +124,7 @@ _save_bits:
 ;       A also contains Y
 Map_GetFirstSubTilesInXY:
 {
-    .alias  _x                  $00
+    .alias  _x                  $0f
 
     lda CameraCurrentX
     lsr
@@ -174,32 +167,33 @@ Map_GetPPUOffsetFromRow:
 {
     .alias  _ppu_addr_temp      $00
     .alias  _x                  $02
-        sta _x
-        lda CameraCurrentY2
-        and #$fe
-        asl
-        `addm _x
-        stx _x
-        ldx #$1e
-        jsr Divide8 ; a = (a % $1e)
-        tax
-        and #$18    ; ppu_hi += (y & $18) >> 3
-        lsr
-        lsr
-        lsr
-        `addm _ppu_addr_temp
-        sta _ppu_addr_temp
-        txa
-        and #$07    ; ppu_lo += (y & $07) << 5
-        asl
-        asl
-        asl
-        asl
-        asl
-        `addm _ppu_addr_temp+1
-        sta _ppu_addr_temp+1
-        ldx _x
-        rts
+    
+    sta _x
+    lda CameraCurrentY2
+    and #$fe
+    asl
+    `addm _x
+    stx _x
+    ldx #$1e
+    jsr Divide8 ; a = (a % $1e)
+    tax
+    and #$18    ; ppu_hi += (y & $18) >> 3
+    lsr
+    lsr
+    lsr
+    `addm _ppu_addr_temp
+    sta _ppu_addr_temp
+    txa
+    and #$07    ; ppu_lo += (y & $07) << 5
+    asl
+    asl
+    asl
+    asl
+    asl
+    `addm _ppu_addr_temp+1
+    sta _ppu_addr_temp+1
+    ldx _x
+    rts
 }
 
 ; ==============================================================================

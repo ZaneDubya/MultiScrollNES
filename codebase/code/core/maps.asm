@@ -67,7 +67,9 @@ _next_pal:
     rts
 }
 
-; ========================[ MapService_WriteScreen ]============================
+; =========================================s====================================
+; MapService_WriteScreen    Writes an entire screen of tiles and attributes to
+;                           PPU memory.
 ; IN:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
 ; OUT:  Writes an entile screen into VRAM.
 ; NOTE: Wipes out $00-$09,$10-$1f in zp
@@ -107,8 +109,24 @@ MapService_WriteScreen:
     sta _max_y
     
 _nextRow:
-    lda #$01                                ; set 'load attributes' flag always.
-    jsr MapService_WriteRow                 ; wipes out $00-$07, preserves x y
+    ; MapService_UpdateAttrBuffer depends on CameraCurrentY and CameraCurrentY2.
+    ; so we must update these each time we draw an attribute row.
+    tya
+    and #$01
+    beq _no_attributes
+    sty CameraCurrentY
+    clc
+    asl CameraCurrentY
+    asl CameraCurrentY2
+    clc
+    asl CameraCurrentY
+    asl CameraCurrentY2
+    clc
+    asl CameraCurrentY
+    asl CameraCurrentY2
+    lda #$01                                ; set 'load attributes' flag in a.
+    _no_attributes:
+    jsr MapService_WriteRow                 ; wipes out $01-$07, preserves x y
     
     lda MapBuffer_R_PPUADDR
     sta PPU_ADDR
@@ -147,6 +165,7 @@ _nextRow:
     cpy _max_y
     bne _nextRow
     
+    ; copy the entire 64-byte attribute table to $23C0.
     lda #$23
     sta PPU_ADDR
     lda #$C0
@@ -158,6 +177,11 @@ _nextRow:
     inx
     cpx #$40
     bne _forx
+    ; clear the row attribute and col attribute indexes, so we don't copy them
+    ; on next nmi.
+    lda #$00
+    sta MapBuffer_RA_Index
+    sta MapBuffer_CA_Index
     
     rts
 .scend
@@ -174,10 +198,12 @@ MapService_LoadNewData:
     ; check if we need to load new superchunks.
     jsr MapService_CheckLoadedSuperChunks
     
+    ; get the first visible subtile in x and y
     jsr Map_GetFirstSubTilesInXY
     stx _x          ; save x and y
     sty _y          ;   *
     
+    ; check if we need to load a new row of tiles
     sec                     ; a = y - last_y
     sbc MapBuffer_Last_Y    ; 
     beq _checkColumn
@@ -193,7 +219,9 @@ MapService_LoadNewData:
 *   jsr MapService_LoadRow ; wipes out $00-$07
     ldx _x
     ldy _y
+    
 _checkColumn:
+    ; check if we need to load a new column of tiles.
     txa
     sec
     sbc MapBuffer_Last_X
@@ -222,6 +250,7 @@ _return:
 ;           26+479=505 if copying a column.
 ;           26+449=475 if copying a row.
 ;           25+479+449=953 if copying both column and row.
+;           ... plus a few more to copy attributes!
 MapService_CopyRowColData:
 {
     _checkRow:                                          ; Cycles
@@ -242,9 +271,9 @@ MapService_CopyRowColData:
     
     _checkColumn:
         `CheckMapDataFlag MapData_HasColData            ; 5
-        beq _return                                     ; 3 if none, 2 otherwise
+        beq _checkAttributes                            ; 3 if none, 2 otherwise
         
-        lda MapBuffer_C_PPUADDR                         ; 16    
+        lda MapBuffer_C_PPUADDR                         ; 16
         sta PPU_ADDR
         lda MapBuffer_C_PPUADDR+1
         sta PPU_ADDR
@@ -256,9 +285,29 @@ MapService_CopyRowColData:
         cpx #$1e                                        ; 2    
         bne -                                           ; 3 (2)
     
+    _checkAttributes:
+        lda MapBuffer_RA_Index ; and MapBuffer_CA_Index ...
+        beq _return
+        
+        pha
+        `SetByte PPU_CTRL, $88                          ; 6
+        lda #$23
+        sta PPU_ADDR
+        pla
+        sta PPU_ADDR
+        tax
+    *   lda [MapData_Attributes-$C0],x
+        sta PPU_DATA
+        inx
+        txa
+        and #$07
+        bne -
+        
     _return:
         lda #$00                                        ; 5
         sta MapBuffer_Flags
+        sta MapBuffer_RA_Index
+        sta MapBuffer_CA_Index
         rts                                             ; 6
 }
 
