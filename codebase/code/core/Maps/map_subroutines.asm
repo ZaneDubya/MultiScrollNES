@@ -44,11 +44,12 @@ MapService_UpdateAttrBuffer:
     ; address of attribute byte = ((x & $1f) / 4) + (((y & $1f) / 4) * 8): 0-63
     txa
     and #$1f
+    clc
     lsr
     lsr
     sta _byte ; byte = x & $1f / 4
     lda _y_attr
-    and #$fe
+    and #$0e
     clc
     asl
     asl

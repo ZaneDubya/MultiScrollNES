@@ -22,10 +22,14 @@ MapService_WriteRow:
     .alias  _lower_y_row        $05
     .alias  _ChunkPtr           $06
     .alias  _ChunkPtrHi         $07
-    .alias  _do_attributes      $08    
+    .alias  _do_attributes      $08
+    .alias  _attrIndex          $09
     .alias  _attributebuffer    $10
     
     sta _do_attributes
+    lda #$00
+    sta _attrIndex
+    
     `SaveXY
     
     txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
@@ -110,11 +114,11 @@ MapService_WriteRow:
     _ul:
         lda _do_attributes              ; if (_do_attributes != 0)
         beq +                           ; {
-        lda _writeindex                 ;   x = _writeindex / 2
-        lsr                             ;
-        tax                             ;    
+        ldx _attrIndex                  ;   x = _attrIndex 
         lda (Tileset_PtrAttribs),y      ;   a = Tileset_PtrAttribs[y]
         sta _attributebuffer,x          ;   _attributebuffer[x] = a
+        inx
+        stx _attrIndex
 *       lda (Tileset_PtrUL),y
         jmp _copyTile
     _ur:
@@ -127,11 +131,11 @@ MapService_WriteRow:
     _ll:
         lda _do_attributes              ; if (_do_attributes != 0)
         beq +                           ; {
-        lda _writeindex                 ;   x = _writeindex / 2
-        lsr                             ;
-        tax                             ;    
+        ldx _attrIndex                  ;   x = _attrIndex 
         lda (Tileset_PtrAttribs),y      ;   a = Tileset_PtrAttribs[y]
         sta _attributebuffer,x          ;   _attributebuffer[x] = a
+        inx
+        stx _attrIndex
 *       lda (Tileset_PtrLL),y
         jmp _copyTile
     _lr:
