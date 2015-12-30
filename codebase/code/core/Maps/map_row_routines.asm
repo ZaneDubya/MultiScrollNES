@@ -1,9 +1,64 @@
-; MapService_Write.asm
-; Sets up rows and columns of tiles and attributes to be copied to PPU RAM
-; during the next NMI.
+; ==============================================================================
+; Map_LoadRow
+; In:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
+;       x = first visible x tile, y = first visible y tile
+;       a = 0 if load the first row (scrolling up), 1 if load the last row (down)
+; Out:  writes 32 tiles to MapData_RowBuffer
+; Note: wipes out $00 - $08
+Map_LoadRow:
+{
+    .alias  _ppu_addr_temp      $00
+
+    pha ; save a
+    pha ; twice
+    
+    `Mapper_SwitchBank Bank_ChkData
+    
+    lda #$20
+    sta _ppu_addr_temp
+    lda #$00
+    sta _ppu_addr_temp+1
+    
+    pla
+    cmp #$01                            ; a,y = y + (a == 1) ? 1d : 0
+    tya                                 ;   |
+    bcc +                               ;   |   (carry set if in.a >= 1)
+    `add $1d                            ;   |
+    tay                                 ;   *
+    
+*   jsr Map_GetPPUOffsetFromRow         ; wipes $00-$02
+    lda _ppu_addr_temp
+    sta MapBuffer_R_PPUADDR
+    lda _ppu_addr_temp+1
+    sta MapBuffer_R_PPUADDR+1
+    
+    ; load attribute bits when (1) scrolling up and (ppu address & $0020) == 0,
+    ; (2) scrolling down and (ppu address & $0020) == $20.
+    pla                                 ; a = 0 if scrolling up, 1 if down.
+    bne _scroll_down
+    lda CameraCurrentY
+    and #$08
+    beq _load_attributes
+    lda #$00
+    beq _load_row
+    
+    _scroll_down:
+    lda CameraCurrentY
+    and #$08
+    beq _load_row
+    
+    _load_attributes:
+    lda #$01
+    
+    _load_row:
+    jsr Map_WriteRow            ; wipes out $01-$07, preserves x y
+    `SetMapDataFlag MapData_HasRowData
+    
+    rts
+}
 
 ; ==============================================================================
-; MapService_WriteRow  Sets up a row of tiles to be copied to PPU RAM.
+; Map_WriteRow  Sets up a row of tiles to be copied to PPU RAM.
 ; IN    Bank should be set to bank containing chunk data.
 ;       a = load attributes if == 1.
 ;       x = X offset in subtiles. (0 - 63)
@@ -13,7 +68,7 @@
 ; STK   Ph/Pl two bytes on stack
 ; NOTE  Takes about 26.333 scanlines to execute.
 ;       Wipes out $01-$08
-MapService_WriteRow:
+Map_WriteRow:
 {
     .alias  _length             $01
     .alias  _writeindex         $02
@@ -80,7 +135,7 @@ MapService_WriteRow:
     `RestoreXY
     lda _do_attributes
     beq +
-    jsr MapService_UpdateAttrBuffer
+    jsr Map_WriteAttributeRow
 *   rts
 
     _writeRowPortion:
@@ -112,6 +167,9 @@ MapService_WriteRow:
         and #$01
         bne _ur
     _ul:
+        lda (Tileset_PtrUL),y
+        jmp _copyTile
+    _ur:
         lda _do_attributes              ; if (_do_attributes != 0)
         beq +                           ; {
         ldx _attrIndex                  ;   x = _attrIndex 
@@ -119,16 +177,16 @@ MapService_WriteRow:
         sta _attributebuffer,x          ;   _attributebuffer[x] = a
         inx
         stx _attrIndex
-*       lda (Tileset_PtrUL),y
-        jmp _copyTile
-    _ur:
-        lda (Tileset_PtrUR),y
+*       lda (Tileset_PtrUR),y
         jmp _copyTile
     _lower:
         lda _writeindex
         and #$01
         bne _lr
     _ll:
+        lda (Tileset_PtrLL),y
+        jmp _copyTile
+    _lr:        
         lda _do_attributes              ; if (_do_attributes != 0)
         beq +                           ; {
         ldx _attrIndex                  ;   x = _attrIndex 
@@ -136,10 +194,7 @@ MapService_WriteRow:
         sta _attributebuffer,x          ;   _attributebuffer[x] = a
         inx
         stx _attrIndex
-*       lda (Tileset_PtrLL),y
-        jmp _copyTile
-    _lr:
-        lda (Tileset_PtrLR),y
+*       lda (Tileset_PtrLR),y
         ; fall through to copyTile
     _copyTile:
         ldx _writeindex
@@ -147,8 +202,6 @@ MapService_WriteRow:
         ; increment the write index to the next byte of MapData_RowBuffer.
         ; if the incremented write index & 1 == 1, then we just wrote the
         ; first subtile of a tile, and now we need to write the second subtile.
-        ; but we also use this value to determine if we need to write an
-        ; attribute value - we write an attribute value with the first tile.
         inc _writeindex         ; if ((writeindex++ & 1) == 1) 
         lda _writeindex         ;   copy a second subtile from the same tile
         and #$01                ;   |
@@ -172,152 +225,120 @@ MapService_WriteRow:
 }
 
 ; ==============================================================================
-; MapService_WriteCol  Sets up a column of tiles to be copied to PPU RAM.
-; IN    Bank should be set to bank containing chunk data.
-;       X is X offset in subtiles. (0 - 63)
-;       Y is Y offset in subtiles. (0 - 63)
-; OUT   writes 30 tiles to MapData_ColBuffer
-; STK   Ph/Pl two bytes on stack
-; NOTE  Takes about 25 scanlines to execute.
-;       Wipes out $01-$09.
-MapService_WriteCol:
+; IN:   x = X offset in subtiles. (0 - 63)
+;       y = Y offset in subtiles. (0 - 63)
+;       16 2-bit attribute values in $0010-$001f
+; OUT:  Writes passed attributes into appropriate bytes of MapData_Attributes
+Map_WriteAttributeRow:
 {
-    .alias  _length             $01
-    .alias  _writeindex         $02
-    .alias  _chunk              $03
-    .alias  _tile               $04
-    .alias  _right_x_col        $05
-    .alias  _ChunkPtr           $06
-    .alias  _ChunkPtrHi         $07
-    .alias  _do_attributes      $08    
-    .alias  _temp               $09
+    .alias  _byte           $01
+    .alias  _shift          $02
+    .alias  _y_attr         $03
+    .alias  _y              $04
+    .alias  _shifted        $05
     
-    sta _do_attributes
     `SaveXY
+    ; each attribute table can hold only 15 metatile rows. because each
+    ; superchunk is 16 metatile rows, we need to offset the attribute row we
+    ; are writing to by (rows % 15).
+    lda CameraCurrentY      ; _y_attr = (ccy >> 4 + ccyh) % 15
+    clc
+    lsr
+    lsr
+    lsr
+    lsr
+    clc
+    adc CameraCurrentY2
+    jsr Mod15
+    sta _y_attr
     
-    txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
+    ; shift value to sub attribute bits: (y & 2) * 2 + (x & 2): 0, 2, 4, or 6.
+    ; I normalize this to 0, 1, 2, or 3.
+    clc
+    asl
+    and #$02
+    sta _shift
+    txa
+    and #$02
+    clc
+    lsr
+    ora _shift
+    sta _shift ; shift = 0, 1, 2, or 3.
+    
+    ; address of attribute byte = ((x & $1f) / 4) + (((y & $1f) / 4) * 8): 0-63
+    txa
+    and #$1f
+    clc
     lsr
     lsr
-    lsr
-    lsr
-    sta _chunk
-    tya
-    and #$30
-    lsr
-    lsr
-    ora _chunk
-    sta _chunk
-
-    txa                             ; tile = ((x & $0e) >> 1) | ((y & $0e) << 2)
+    sta _byte ; byte = x & $1f / 4
+    lda _y_attr
     and #$0e
-    lsr
-    sta _tile
-    tya
-    and #$0e
+    clc
     asl
     asl
-    ora _tile
-    sta _tile
+    ora _byte
+    tax ; x = index of the first attribute byte
     
-    txa                             ; use right col tiles if (x & $01) == 1
-    and #$01
-    sta _right_x_col
+    ; MapBuffer_RA_Index is the low byte of PPU_ADDR that attr will be written to.
+    and #$f8 ; mask out lower three bits - write an entire row at a time.
+    clc
+    adc #$c0
+    sta MapBuffer_RA_Index
     
-    tya                             ; THIS IS MAGIC.
-    sta _temp                       ; a = y + (y_hi >> 1) << 2
-    lda CameraCurrentY2
-    lsr
-    asl
-    asl
-    `addm _temp
-    
-*   cmp #$1e
-    bcc +
-    `sub $1e
-    bne -
-*   sta _writeindex
-    sta _length
-    jsr _writeColPortion
+    ldy #$ff                ; for (y = 0; y < 16; y++)
+_fory:                      ; {
+    iny                     ;
+    cpy #$10                ;
+    beq _end_fory           ;    
+    lda $10,y                   ; a = attr_row[y]
+    sty _y
+    jsr _shift_bits             ; shift a by _shift * 2 bits, wipes out y.
+    sta _shifted                ; _shifted = a
+    lda MapData_Attributes,x    ; a = attr[x]
+    and _save_bits,y            ; a &= save_bits[_shift] (y is set in _shift_bits)
+    ldy _y
+    ora _shifted                ; a |= shifted.
+    sta MapData_Attributes,x    ; attr[x] = a
+    lda _shift                  ; _shift += 2
+    eor #$01                    ;
+    sta _shift                  ;
+    and #$01                    ;
+    bne _fory                   ; if (_shift bit 0 is 0, we just advanced a tile) {
+    txa                         ;     if (x & 7 == 7)
+    and #$07                    ;
+    cmp #$07                    ;
+    bne _inc_x                  ;    
+    txa                         ;         x &= ^7
+    and #$f8                    ;
+    tax                         ;
+    jmp _fory                   ;    
+    _inc_x:                     ;       else
+    inx                         ;           x += 1;
+    jmp _fory                   ; }
+_end_fory:                 ; }
     `RestoreXY
     rts
 
-    _writeColPortion:
-    _getChunkPointer:
-        ldx _chunk                      ; get pointer to the current chunk
-        `SetPointer _ChunkPtr, ChunkData
-        lda MapData_Chunks,x
-        and #$c0
-        `addm _ChunkPtr
-        sta _ChunkPtr
-        bcc +
-        inc _ChunkPtrHi
-    *   lda MapData_Chunks,x
-        and #$3f
-        `addm _ChunkPtrHi
-        sta _ChunkPtrHi
-    _getTile:
-    *   ldy _tile
-        lda (_ChunkPtr),y
-        tay
-    ; get sub tile
-        lda _right_x_col
-        bne _right0
-        lda _writeindex
-        and #$01
-        bne _ll0
-    _ul0:
-        lda (Tileset_PtrUL),y
-        jmp _copyTile
-    _ll0:
-        lda (Tileset_PtrLL),y
-        jmp _copyTile
-    _right0:
-        lda _writeindex
-        and #$01
-        bne _lr0
-    _ur0:
-        lda (Tileset_PtrUR),y
-        jmp _copyTile
-    _lr0:
-        lda (Tileset_PtrLR),y
-        jmp _copyTile
-    _copyTile:
-        ldx _writeindex
-        sta MapData_ColBuffer,x
-        inc _writeindex
-        
-        lda _writeindex                     ; if (writeindex == length) return
-        .if a == #$1e                       ; wrap on #$1e
-        {
-            lda #$00
-            sta _writeindex
-        }
-        cmp _length
-        bne +
-        rts
-        
-    *   lda _writeindex         ; if ((writeindex & 1) == 1) copy second subtile
-        and #$01
-        bne _getTile            ; else
-        
-        lda _tile               ; tile += 8
-        `add $08
-        sta _tile
-        lda #$c0                ; if ((tile % c0) == 0)
-        and _tile
-        beq _getTile
-        lda _tile               ; tile -= 64
-        `sub $40
-        sta _tile
-        lda _chunk              ; chunk += 4
-        `add $04
-        sta _chunk
-        lda #$f0                ; if ((chunk % f0) == 0)
-        and _chunk
-        bne +
-        jmp  _getChunkPointer
-    *   lda _chunk
-        `sub $10                ; chunk -= 16;
-        sta _chunk
-        jmp _getChunkPointer
+_shift_bits:
+    clc
+    ldy _shift
+    beq _shift_0
+    cpy #$2
+    beq _shift_4
+    bcc _shift_2
+_shift_6:
+    asl
+    asl
+_shift_4:
+    asl
+    asl
+_shift_2:
+    asl
+    asl
+_shift_0:
+    rts
+    
+_save_bits:
+    .byte   $FC, $F3, $CF, $3F
 }

@@ -109,8 +109,8 @@ MapService_WriteScreen:
     sta _max_y
     
 _nextRow:
-    ; MapService_UpdateAttrBuffer depends on CameraCurrentY and CameraCurrentY2.
-    ; so we must update these each time we draw an attribute row.
+    ; Map_WriteAttributeRow (called from Map_WriteRow) depends on CameraCurrentY
+    ; and CameraCurrentY2. We must update these each attribute row iteration.
     tya
     and #$01
     beq _no_attributes
@@ -126,7 +126,7 @@ _nextRow:
     asl CameraCurrentY2
     lda #$01                                ; set 'load attributes' flag in a.
     _no_attributes:
-    jsr MapService_WriteRow                 ; wipes out $01-$07, preserves x y
+    jsr Map_WriteRow                        ; wipes out $01-$07, preserves x y
     
     lda MapBuffer_R_PPUADDR
     sta PPU_ADDR
@@ -216,7 +216,7 @@ MapService_LoadNewData:
     beq +
     lda #$00
     
-*   jsr MapService_LoadRow ; wipes out $00-$07
+*   jsr Map_LoadRow ; wipes out $00-$07
     ldx _x
     ldy _y
     
@@ -235,7 +235,7 @@ _checkColumn:
     cmp #$C1
     beq +
     lda #$00
-*   jsr MapService_LoadCol ; wipes out $00-$08
+*   jsr Map_LoadCol ; wipes out $00-$08
     ldx _x
     ldy _y
 _return:
