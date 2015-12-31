@@ -32,8 +32,8 @@ Map_LoadRow:
     lda _ppu_addr_temp+1
     sta MapBuffer_R_PPUADDR+1
     
-    ; load attribute bits when (1) scrolling up and (ppu address & $0020) == 0,
-    ; (2) scrolling down and (ppu address & $0020) == $20.
+    ; load attribute bits when (1) scrolling up and loading lower tile of 
+    ; metatile; (2) scrolling down and loading upper tile of metatile.
     pla                                 ; a = 0 if scrolling up, 1 if down.
     bne _scroll_down
     lda CameraCurrentY
@@ -58,7 +58,7 @@ Map_LoadRow:
 }
 
 ; ==============================================================================
-; Map_WriteRow  Sets up a row of tiles to be copied to PPU RAM.
+; Map_WriteRow      Sets up a row of tiles to be copied to PPU RAM.
 ; IN    Bank should be set to bank containing chunk data.
 ;       a = load attributes if == 1.
 ;       x = X offset in subtiles. (0 - 63)
@@ -67,7 +67,7 @@ Map_LoadRow:
 ;       writes 16 2bit attributes to $0010 - $001f
 ; STK   Ph/Pl two bytes on stack
 ; NOTE  Takes about 26.333 scanlines to execute.
-;       Wipes out $01-$08
+;       Wipes out $01-$09
 Map_WriteRow:
 {
     .alias  _length             $01
@@ -81,6 +81,7 @@ Map_WriteRow:
     .alias  _attrIndex          $09
     .alias  _attributebuffer    $10
     
+    ; BEGIN shared code between this and map_writecol
     sta _do_attributes
     lda #$00
     sta _attrIndex
@@ -110,14 +111,14 @@ Map_WriteRow:
     asl
     ora _tile
     sta _tile
+    ; END shared code
     
     tya                                 ; use lower tiles if (y & $01) == 1
     and #$01
     sta _lower_y_row
     
-    txa
-    
     ; write the left side of the next chunk to the 'right side' of ppu memory
+    txa
     and #$1f
     sta _writeindex                 ; writeindex = x % 32
     lda #$20                        ; 
@@ -131,7 +132,8 @@ Map_WriteRow:
     and #$1f
     sta _length
     jsr _writeRowPortion
-    ; restore x and y, and update the attribute buffer.
+    
+    ; restore x and y, and update the attribute buffer if we are loading attributes.
     `RestoreXY
     lda _do_attributes
     beq +
@@ -231,13 +233,14 @@ Map_WriteRow:
 ; OUT:  Writes passed attributes into appropriate bytes of MapData_Attributes
 Map_WriteAttributeRow:
 {
-    .alias  _byte           $01
-    .alias  _shift          $02
-    .alias  _y_attr         $03
-    .alias  _y              $04
-    .alias  _shifted        $05
+    .alias  _byte           $01 ; address of attribute byte (0-63)
+    .alias  _shift          $02 ; shift of current attribute bits (0-3)
+    .alias  _y_attr         $03 ; the y-attribute row (0-15)
+    .alias  _temp           $04 ; temp storage for y register
+    .alias  _shifted        $05 ; temp storage for attribute bytes
     
     `SaveXY
+    
     ; each attribute table can hold only 15 metatile rows. because each
     ; superchunk is 16 metatile rows, we need to offset the attribute row we
     ; are writing to by (rows % 15).
@@ -292,15 +295,15 @@ _fory:                      ; {
     cpy #$10                ;
     beq _end_fory           ;    
     lda $10,y                   ; a = attr_row[y]
-    sty _y
-    jsr _shift_bits             ; shift a by _shift * 2 bits, wipes out y.
+    sty _temp
+    jsr _shift_bits             ; shift a by _shift * 2 bits, y = 0-3
     sta _shifted                ; _shifted = a
     lda MapData_Attributes,x    ; a = attr[x]
     and _save_bits,y            ; a &= save_bits[_shift] (y is set in _shift_bits)
-    ldy _y
+    ldy _temp
     ora _shifted                ; a |= shifted.
     sta MapData_Attributes,x    ; attr[x] = a
-    lda _shift                  ; _shift += 2
+    lda _shift                  ; _shift += 1
     eor #$01                    ;
     sta _shift                  ;
     and #$01                    ;

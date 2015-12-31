@@ -45,8 +45,7 @@ Map_GetFirstSubTilesInXY:
 ; ==============================================================================
 ; Map_GetPPUOffsetFromRow
 ; IN:   a = y row.
-; OUT:  Gets the PPU Address to the first tile in the specified row.
-; adds this to MapBuffer_PPUADDR
+; OUT:  Returns PPU Address to the first tile in the specified row in $00-$01
 Map_GetPPUOffsetFromRow:
 {
     .alias  _ppu_addr_temp      $00

@@ -271,7 +271,7 @@ MapService_CopyRowColData:
     
     _checkColumn:
         `CheckMapDataFlag MapData_HasColData            ; 5
-        beq _checkAttributes                            ; 3 if none, 2 otherwise
+        beq _checkAttributeRow                          ; 3 if none, 2 otherwise
         
         lda MapBuffer_C_PPUADDR                         ; 16
         sta PPU_ADDR
@@ -285,22 +285,35 @@ MapService_CopyRowColData:
         cpx #$1e                                        ; 2    
         bne -                                           ; 3 (2)
     
-    _checkAttributes:
-        lda MapBuffer_RA_Index ; and MapBuffer_CA_Index ...
-        beq _return
-        
-        pha
+    _checkAttributeRow:
         `SetByte PPU_CTRL, $88                          ; 6
+        ldx MapBuffer_RA_Index
+        beq _checkAttributeCol
+        
         lda #$23
         sta PPU_ADDR
-        pla
-        sta PPU_ADDR
-        tax
+        stx PPU_ADDR
     *   lda [MapData_Attributes-$C0],x
         sta PPU_DATA
         inx
         txa
         and #$07
+        bne -
+        
+    _checkAttributeCol:
+        ldx MapBuffer_CA_Index
+        beq _return
+        ldy #$dd
+    *   lda #$23
+        sta PPU_ADDR
+        stx PPU_ADDR
+        lda [MapData_Attributes-$C0],x
+        sta PPU_DATA
+        txa
+        clc
+        adc #$08
+        tax
+        and #$80
         bne -
         
     _return:
