@@ -313,22 +313,32 @@ _fory:                      ; {
     lda _shift                  ; _shift += 2
     eor #$02                    ;
     sta _shift                  ;
+
+    txa                         ; check to see if we reached the end of the attr table
+    and #$38                    ; if (x & $38 == $38) (x has range of 0-$3f)
+    cmp #$38                    ; and if (this is the second shift row)
+    bne _nottheend              ;   x &= 7 (top of attr table)
+    lda _shift                  ;   shift &= 1 (first shift row)
+    and #$02
+    beq _nottheend
+    txa
+    and #$07
+    tax
+    lda _shift
+    and #$01
+    sta _shift
+    jmp _fory
+    
+_nottheend:
+    lda _shift                  ;
     and #$02                    ;
     bne _fory                   ; if (_shift bit 1 is 0, we just advanced a tile) {
-    txa                         ;     if (x & $38 == $38) (x has range of 0-$3f)
-    and #$38                    ;
-    cmp #$38                    ;
-    bne _inc_x                  ;    
-    txa                         ;         x &= ^7
-    and #$07                    ;
-    tax                         ;
-    jmp _fory                   ;    
-    _inc_x:                     ;       else
     txa                         ;           x += 8;
     clc                         ;
     adc #$08                    ;
     tax                         ;
     jmp _fory                   ; }
+    
 _end_fory:                 ; }
     `RestoreXY
     rts
