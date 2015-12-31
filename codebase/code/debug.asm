@@ -92,7 +92,7 @@ Debug_CreatePlayerActor:
     pla
     sta Actor_X,x
     sta Actor_Y,x
-    `add 16
+    `add 9
     pha
     lda #$00
     sta Actor_SuperChunk,x
@@ -101,9 +101,8 @@ Debug_CreatePlayerActor:
     jsr SprLdr_AllocTiles
     
     inx
-    cpx #$04
+    cpx #$10
     bne -
-    
     
     pla
     rts

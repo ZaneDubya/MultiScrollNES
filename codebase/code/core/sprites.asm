@@ -96,7 +96,7 @@ Sprite_DrawMetaSprite:
     .alias  _flag_world_space           $0b
     .alias  _x2                         $0c
     .alias  _y2                         $0d
-    ;.checkpc 0
+    
     ; do not display sprite if oam is full.
     lda OamFull
     beq _oam_not_full
@@ -132,9 +132,9 @@ Sprite_DrawMetaSprite:
         sta _ix
         sta _iy
         lda #$00
+        tay
         sta _x_carry
         ldx OamCurrentIndex
-        tay
         lda _x
         sta _x2
         lda _y

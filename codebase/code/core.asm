@@ -26,21 +26,20 @@
 RunOneFrame:
     `SetGameFlag FlagMainInProcess
     
-    ;`DebugShadePPU_Red
+    `DebugShadePPU_Grey
     jsr FamiToneUpdate
-    ;`DebugShadePPU_Blue
     jsr UpdateTimers                        ; update Timer1 and Timer2
     jsr Input_Get                           ; poll gamepad
     jsr UpdateGameMode                      ; Main routine for updating game.
     
 ; Write sprites to OAM buffer.
-    `DebugShadePPU_Green
+    `DebugShadePPU_Blue
     jsr Sprite_BeginFrame
     jsr Actors_DrawActors
     jsr Sprite_EndFrame
     
 ; Load new map data
-    `DebugShadePPU_Red
+    `DebugShadePPU_Green
     jsr MapSvc_LoadNewData
 
 ; Clear the flag main_in_progress and return

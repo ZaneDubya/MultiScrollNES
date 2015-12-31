@@ -9,8 +9,10 @@
 Actors_DrawActors:
 {
     .alias  _draw_addr                  $00
-    .alias  _actor_index                $02
-    .alias  _sprite_index               $03
+    .alias  _spritedata_index           $03 ; index of sprite data in ROM
+    .alias  _sprite_x                   $08
+    .alias  _sprite_y                   $09
+    .alias  _sprite_superchunk          $0a
     .alias  _i                          $0f ; iterator - must not be overwritten by called routines.
     
     ; switch to bank containing metasprite data.
@@ -23,15 +25,23 @@ Actors_DrawActors:
     stx _i
     
     _draw_Actor:
-        lda Actor_SortArray,x           ; if (Actor_SortArray[x] < 0)
+
+        lda Actor_SortArray,x           ; if Actor_SortArray[x] has bit 7 set
         bmi _next_Actor                 ;   continue;
         
-        tax                             ; x = actor index (to data in $0300)
+        tax                             ; x = index of current actor in memory
+        ; get the x and y and superchunk values
+        lda Actor_X,x
+        sta _sprite_x
+        lda Actor_Y,x
+        sta _sprite_y
+        lda Actor_SuperChunk,x
+        sta _sprite_superchunk
+        
         lda Actor_Definition,x          ; a = actor definition index
-        stx _actor_index                ; _actor_index = x
-        tax                             ; x = a
+        tax 
         lda ActorHeaderSprite,x         
-        sta _sprite_index               ; _sprite_index = a
+        sta _spritedata_index           ; index of sprite data
         lda ActorHeaderAnimatePtr,x     ; _draw_routine_addr = address of draw routine.
         sta [_draw_addr+0]
         lda ActorHeaderAnimatePtrHi,x
@@ -55,15 +65,18 @@ Actors_DrawActors:
 
 ; ------------------------------------------------------------------------------
 ; ActDrw_Std - An example actor drawing routine.
-; In:   $02 = index of actor being drawn.
-;       $03 = index of sprite being drawn.
+; In:   x   = index of actor data in ROM
+;       $03 = index of sprite data.
+;       $08 = actor x
+;       $09 = actor y
+;       $0a = actor sc
 ; Ret:  None.
 ; Note: Must preserve $0f
 ActDrw_Std:
 {
-    .alias  _ptr_metasprite             $00 ; ... $01        
-    .alias  _actor_index                $02
-    .alias  _sprite_index               $03
+    .alias  _ptr_metasprite             $00
+    .alias  _ptr_metasprite_hi          $01
+    .alias  _spritedata_index           $03 ; index of sprite data in ROM
     .alias  _oam_byte1                  $04
     .alias  _oam_byte2                  $05
     .alias  _frame                      $06
@@ -73,7 +86,6 @@ ActDrw_Std:
     .alias  _sprite_superchunk          $0a
     .alias  _flag_world_space           $0b
     
-    ldx _actor_index
     lda Actor_DrawData0,x                   ; cccc ffpp, see Actor Data.txt
     tay
     and #$f0
@@ -103,22 +115,19 @@ _Draw_MovementSprite:
     lda FrameCount
     and #$10 ; change sprite every 16 frames
     beq _draw_frame
-    lda _frame
-    `add 1
-    sta _frame
-    ldx _sprite_index
+    inc _frame
+    ldx _spritedata_index
     
 _draw_frame:
     ; x is _sprite_index, _frame is frame to draw. from these, get metasprite ptr
     ; first get the metasprite size (and use this value to set _tiles_wh)
-    lda SpriteHdrs_Tile,x               ; a = [SpriteHdrs_Tile+x]
+    lda SpriteHdrs_Tile,x               ; a = SpriteHdrs_Tile[x]
     and #$03                            ; _tiles_wh = a + 1
-    `add 1                              ; |
     sta _tiles_wh                       ; |
-    `sub 1                              ; +
-    beq _metasprite_8x8
+    inc _tiles_wh                       ; +
     cmp #$01
     beq _metasprite_16x16
+    bmi _metasprite_8x8
     cmp #$02
     beq _metasprite_24x24
 _metasprite_32x32: ; max 31 frames, shift left by 32b (5x), max of 1000+, need to carry into second byte.
@@ -126,7 +135,7 @@ _metasprite_32x32: ; max 31 frames, shift left by 32b (5x), max of 1000+, need t
     lsr
     lsr
     lsr
-    sta [_ptr_metasprite+1]
+    sta _ptr_metasprite_hi
     lda _frame
     ror
     ror
@@ -140,22 +149,22 @@ _metasprite_24x24: ; 3x3 metasprites, each is 18b, add 16b + 2b per frame to off
     lsr
     lsr
     lsr
-    sta [_ptr_metasprite+1]
+    sta _ptr_metasprite_hi
     lda _frame
     asl
     asl
     asl
     asl
-    sta [_ptr_metasprite+0]
+    sta _ptr_metasprite
     lda _frame
     asl
-    `addm [_ptr_metasprite+0]
+    `addm _ptr_metasprite
     bcc +
-    inc [_ptr_metasprite+1]
+    inc _ptr_metasprite_hi
 *   jmp _add_meta_ptr
 _metasprite_16x16:
     lda #$00
-    sta [_ptr_metasprite+1]
+    sta _ptr_metasprite_hi
     lda _frame ; max 31 frames, shift left by 8b (3x) = max of 248, fits in one byte!
     asl
     asl
@@ -163,28 +172,20 @@ _metasprite_16x16:
     jmp _add_meta_ptr
 _metasprite_8x8: ; max 31 frames, shift left by 2b (1x) = max of 62, fits in one byte!
     lda #$00
-    sta [_ptr_metasprite+1]
+    sta _ptr_metasprite_hi
     lda _frame
     asl
 _add_meta_ptr:
     sta _ptr_metasprite
     lda SpriteHdrs_AddressHi,x
-    `addm [_ptr_metasprite+1]
-    sta [_ptr_metasprite+1]
+    `addm _ptr_metasprite_hi
+    sta _ptr_metasprite_hi
     lda SpriteHdrs_Address,x
-    `addm [_ptr_metasprite+0]
-    sta [_ptr_metasprite+0]
+    `addm _ptr_metasprite
+    sta _ptr_metasprite
     bcc +
-    inc [_ptr_metasprite+1]
+    inc _ptr_metasprite_hi
 *   
-; get the x and y and superchunk values, set the world space flag, and draw!
-    ldx _actor_index
-    lda Actor_X,x
-    sta _sprite_x
-    lda Actor_Y,x
-    sta _sprite_y
-    lda Actor_SuperChunk,x
-    sta _sprite_superchunk
     lda #$01
     sta _flag_world_space
     jmp Sprite_DrawMetaSprite
