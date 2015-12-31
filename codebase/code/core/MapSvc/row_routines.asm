@@ -1,11 +1,11 @@
 ; ==============================================================================
-; Map_LoadRow
+; MapSvc_LoadRow
 ; In:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
 ;       x = first visible x tile, y = first visible y tile
 ;       a = 0 if load the first row (scrolling up), 1 if load the last row (down)
 ; Out:  writes 32 tiles to MapData_RowBuffer
 ; Note: wipes out $00 - $08
-Map_LoadRow:
+MapSvc_LoadRow:
 {
     .alias  _ppu_addr_temp      $00
 
@@ -26,7 +26,7 @@ Map_LoadRow:
     `add $1d                            ;   |
     tay                                 ;   *
     
-*   jsr Map_GetPPUOffsetFromRow         ; wipes $00-$02
+*   jsr MapSvc_GetPPUOffsetFromRow         ; wipes $00-$02
     lda _ppu_addr_temp
     sta MapBuffer_R_PPUADDR
     lda _ppu_addr_temp+1
@@ -51,14 +51,14 @@ Map_LoadRow:
     lda #$01
     
     _load_row:
-    jsr Map_WriteRow            ; wipes out $01-$07, preserves x y
+    jsr MapSvc_WriteRow            ; wipes out $01-$07, preserves x y
     `SetMapDataFlag MapData_HasRowData
     
     rts
 }
 
 ; ==============================================================================
-; Map_WriteRow      Sets up a row of tiles to be copied to PPU RAM.
+; MapSvc_WriteRow      Sets up a row of tiles to be copied to PPU RAM.
 ; IN    Bank should be set to bank containing chunk data.
 ;       a = load attributes if == 1.
 ;       x = X offset in subtiles. (0 - 63)
@@ -68,7 +68,7 @@ Map_LoadRow:
 ; STK   Ph/Pl two bytes on stack
 ; NOTE  Takes about 26.333 scanlines to execute.
 ;       Wipes out $01-$09
-Map_WriteRow:
+MapSvc_WriteRow:
 {
     .alias  _length             $01
     .alias  _writeindex         $02
@@ -81,7 +81,7 @@ Map_WriteRow:
     .alias  _attrIndex          $09
     .alias  _attributebuffer    $10
     
-    ; BEGIN shared code between this and map_writecol
+    ; BEGIN shared code between this and MapSvc_writecol
     sta _do_attributes
     lda #$00
     sta _attrIndex
@@ -137,7 +137,7 @@ Map_WriteRow:
     `RestoreXY
     lda _do_attributes
     beq +
-    jsr Map_WriteAttributeRow
+    jsr MapSvc_WriteAttributeRow
 *   rts
 
     _writeRowPortion:
@@ -231,7 +231,7 @@ Map_WriteRow:
 ;       y = Y offset in subtiles. (0 - 63)
 ;       16 2-bit attribute values in $0010-$001f
 ; OUT:  Writes passed attributes into appropriate bytes of MapData_Attributes
-Map_WriteAttributeRow:
+MapSvc_WriteAttributeRow:
 {
     .alias  _byte           $01 ; address of attribute byte (0-63)
     .alias  _shift          $02 ; shift of current attribute bits (0-3)

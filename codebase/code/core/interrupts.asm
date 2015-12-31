@@ -29,7 +29,7 @@ NMI:
     ; EITHER load map data (refresh screen edges when scrolling) OR CHRRAM tiles
     lda MapBuffer_Flags                     ; Check for map data to be copied   ; 6 if no data to copy.
     beq +                                                                       ; 958 if copying both R & C data.
-    jsr MapService_CopyRowColData
+    jsr MapSvc_CopyRowColData
     clc
     bcc ++
 *   lda SprLdr_LoadOpReady

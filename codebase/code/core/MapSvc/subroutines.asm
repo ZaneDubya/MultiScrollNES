@@ -1,12 +1,12 @@
-.require "map_col_routines.asm"
-.require "map_row_routines.asm"
+.require "col_routines.asm"
+.require "row_routines.asm"
 
 ; ==============================================================================
-; Map_GetFirstSubTilesInXY
+; MapSvc_GetFirstSubTilesInXY
 ; IN:   X and Y scroll values.
 ; OUT:  X and Y registers contain the first visible subtile (0 - 63).
 ;       A also contains Y
-Map_GetFirstSubTilesInXY:
+MapSvc_GetFirstSubTilesInXY:
 {
     .alias  _x                  $0f
 
@@ -43,10 +43,10 @@ Map_GetFirstSubTilesInXY:
 }
 
 ; ==============================================================================
-; Map_GetPPUOffsetFromRow
+; MapSvc_GetPPUOffsetFromRow
 ; IN:   a = y row.
 ; OUT:  Returns PPU Address to the first tile in the specified row in $00-$01
-Map_GetPPUOffsetFromRow:
+MapSvc_GetPPUOffsetFromRow:
 {
     .alias  _ppu_addr_temp      $00
     .alias  _x                  $02
@@ -80,12 +80,12 @@ Map_GetPPUOffsetFromRow:
 }
 
 ; ==============================================================================
-; MapService_GetSuperChunkPointer
+; MapSvc_GetSuperChunkPointer
 ; IN:   Superchunk loaded from X and Y.
 ; Out:  Pointer to SuperChunk in $00,$01.
 ; NOTE: Currently set up for 16x16 superchunk arrays. An additional asl after
 ;       loading Y will make this good for 32x32 data.
-MapService_GetSuperChunkPointer:
+MapSvc_GetSuperChunkPointer:
 {
     .alias  _SuperChunkPtr      $02
     ; get the address of the superchunk pointer
@@ -116,11 +116,11 @@ MapService_GetSuperChunkPointer:
 }
 
 ; ==============================================================================
-; MapService_CheckLoadedSuperChunks
+; MapSvc_CheckLoadedSuperChunks
 ; If new superchunks should be loaded, based on the scroll values, load them.
 ; In: Scroll values.
 ; Wipes out a,x,y,$00,$01
-MapService_CheckLoadedSuperChunks:
+MapSvc_CheckLoadedSuperChunks:
 {
     .alias _max_x       $00
     .alias _max_y       $01
@@ -144,7 +144,7 @@ MapService_CheckLoadedSuperChunks:
         sty _max_y
         ldy MapBuffer_SC_UL_Y
     *   ldx MapBuffer_SC_UL_X
-    *   jsr MapService_LoadSuperChunk
+    *   jsr MapSvc_LoadSuperChunk
         inx
         cpx _max_x
         bne -
@@ -155,9 +155,9 @@ MapService_CheckLoadedSuperChunks:
 }
 
 ; ==============================================================================
-; MapService_LoadSuperChunk - Loads superchunk data into memory.
+; MapSvc_LoadSuperChunk - Loads superchunk data into memory.
 ; IN: Superchunk to load from X and Y.
-MapService_LoadSuperChunk:
+MapSvc_LoadSuperChunk:
 {
     .alias  _SuperChunkPtr      $02
     .alias  _SC_Flags           $04
@@ -186,7 +186,7 @@ MapService_LoadSuperChunk:
             `add $08
             sta _ChunksOffset
         }
-        jsr MapService_GetSuperChunkPointer
+        jsr MapSvc_GetSuperChunkPointer
     ; check the superchunk flags for data. Load data if it exists.
         ldy #$00                            ; reset Y to 0
         lda (_SuperChunkPtr),y              ; load the superchunk flags
@@ -228,7 +228,7 @@ MapService_LoadSuperChunk:
 
 ; ==============================================================================
 ; bounds a point at x=$00-$01,y=$02-$03 to the CameraBound variables.
-MapService_BoundTarget:
+MapSvc_BoundTarget:
 {
     .alias  x_l     CameraTargetX
     .alias  x_h     CameraTargetX2

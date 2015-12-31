@@ -61,7 +61,7 @@ Debug_LoadMap:
     `SetByte CameraBoundB, $ff
     `SetByte CameraBoundB2, $0f
     `SetByte MapBuffer_SC_UL_X, $ff     ; MapService will load all superchunks
-    jsr MapService_WriteScreen          ; load a screen of tiles into vram
+    jsr MapSvc_WriteScreen          ; load a screen of tiles into vram
     `SetByte CameraCurrentY, 0
     `SetByte CameraCurrentY2, 0
     rts
@@ -77,9 +77,42 @@ Debug_InitSprites:
     rts
 
 ; ==============================================================================
+Debug_CreatePlayerActor:
+    lda #$00
+    sta Player_ActorIndex
+    
+    lda #$20
+    pha
+    
+    ldx #$00
+*   txa
+    sta Actor_SortArray,x
+    lda [ActFlg_IsDynamic]
+    sta Actor_Bitflags,x
+    pla
+    sta Actor_X,x
+    sta Actor_Y,x
+    `add 16
+    pha
+    lda #$00
+    sta Actor_SuperChunk,x
+    lda #$00
+    sta Actor_Definition,x
+    jsr SprLdr_AllocTiles
+    
+    inx
+    cpx #$04
+    bne -
+    
+    
+    pla
+    rts
+    
+; ==============================================================================
 Debug_SpriteDisplay:
     ldy #$0f
     lda #$80
+    
 *   sta Actor_SortArray,y
     dey
     bpl -
@@ -132,21 +165,3 @@ Debug_ClearAllActors:
         bpl _loop2
     rts
 .scend
-
-; ==============================================================================
-Debug_CreatePlayerActor:
-    ldx #$00
-    stx Player_ActorIndex
-    stx Actor_SortArray
-    lda [ActFlg_IsDynamic]
-    sta Actor_Bitflags,x
-    lda #$80
-    sta Actor_X,x
-    lda #$60
-    sta Actor_Y,x
-    lda #$00
-    sta Actor_SuperChunk,x
-    lda #$00
-    sta Actor_Definition,x
-    jsr SprLdr_AllocTiles
-    rts

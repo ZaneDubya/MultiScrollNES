@@ -7,7 +7,7 @@ ModeWorld:
     jsr World_CheckScroll               ; debug - scroll on dpad
     jsr World_CheckController
     
-    jsr MapService_UpdateCamera         ; Move the Camera
+    jsr MapSvc_UpdateCamera         ; Move the Camera
     jsr SprLdr_Update                   ; update Sprite Loader data.
     
     rts

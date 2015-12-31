@@ -37,7 +37,7 @@ Reset:
     jsr Input_Init                      ; init gamepad polling code
     
     ; Init Tileset
-    jsr MapService_LoadTileset
+    jsr MapSvc_LoadTileset
     
     ; Load CHRRAM
     jsr Debug_LoadCHRRAM

@@ -12,7 +12,7 @@
 .include "core/sprites.asm"
 .include "core/sprldr.asm"
 .include "core/actors.asm"
-.include "core/maps.asm"
+.include "core/MapSvc.asm"
 .include "core/startup.asm"
 .include "core/exception.asm"
 .include "ModeWorld/ModeWorld.asm"
@@ -26,9 +26,9 @@
 RunOneFrame:
     `SetGameFlag FlagMainInProcess
     
-    `DebugShadePPU_Red
+    ;`DebugShadePPU_Red
     jsr FamiToneUpdate
-    `DebugShadePPU_Blue
+    ;`DebugShadePPU_Blue
     jsr UpdateTimers                        ; update Timer1 and Timer2
     jsr Input_Get                           ; poll gamepad
     jsr UpdateGameMode                      ; Main routine for updating game.
@@ -41,7 +41,7 @@ RunOneFrame:
     
 ; Load new map data
     `DebugShadePPU_Red
-    jsr MapService_LoadNewData
+    jsr MapSvc_LoadNewData
 
 ; Clear the flag main_in_progress and return
     `DebugShadePPU_Normal   

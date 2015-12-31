@@ -1,15 +1,15 @@
 ; ============================= [ MapService.asm ] =============================
 .require "../includes.asm"
-.require "Maps/map_subroutines.asm"
+.require "MapSvc/subroutines.asm"
 .scope
 
 ; ==============================================================================
-; MapService_LoadTileset    Loads a tileset from ROM. Currently it just loads
+; MapSvc_LoadTileset    Loads a tileset from ROM. Currently it just loads
 ;                           the default tileset (at 8200 in bank 0) into VRAM.
 ; IN    Nothing at the moment. Ideally this would be a byte index value - index
 ;       of the tileset to load.
 ; OUT   Sets up tileset addresses in ZP.
-MapService_LoadTileset:
+MapSvc_LoadTileset:
 {
     .alias  _TilesetPtr     $00
     .alias  _GfxPtr         $02
@@ -68,26 +68,26 @@ _next_pal:
 }
 
 ; =========================================s====================================
-; MapService_WriteScreen    Writes an entire screen of tiles and attributes to
+; MapSvc_WriteScreen    Writes an entire screen of tiles and attributes to
 ;                           PPU memory.
 ; IN:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
 ; OUT:  Writes an entile screen into VRAM.
 ; NOTE: Wipes out $00-$09,$10-$1f in zp
 ;       Writes to VRAM - SCREEN MUST BE OFF!
 ; STK:  Uses 2 bytes of stack space.
-MapService_WriteScreen:
+MapSvc_WriteScreen:
 .scope
 .alias  _ppu_addr_temp      $00
 .alias  _max_y              $00
 .alias  _x                  $01
 
     ; check if we need to load new superchunks.
-    jsr MapService_CheckLoadedSuperChunks
+    jsr MapSvc_CheckLoadedSuperChunks
     
     `Mapper_SwitchBank Bank_ChkData
     
     ; get the x and y offsets for tiles (0 - 63), place them in x and y
-    jsr Map_GetFirstSubTilesInXY
+    jsr MapSvc_GetFirstSubTilesInXY
     stx MapBuffer_Last_X
     sty MapBuffer_Last_Y
     
@@ -98,7 +98,7 @@ MapService_WriteScreen:
     sta _ppu_addr_temp+1
     
     tya
-    jsr Map_GetPPUOffsetFromRow
+    jsr MapSvc_GetPPUOffsetFromRow
     lda _ppu_addr_temp
     sta MapBuffer_R_PPUADDR
     lda _ppu_addr_temp+1
@@ -109,7 +109,7 @@ MapService_WriteScreen:
     sta _max_y
     
 _nextRow:
-    ; Map_WriteAttributeRow (called from Map_WriteRow) depends on CameraCurrentY
+    ; MapSvc_WriteAttributeRow (called from MapSvc_WriteRow) depends on CameraCurrentY
     ; and CameraCurrentY2. We must update these each attribute row iteration.
     tya
     and #$01
@@ -126,7 +126,7 @@ _nextRow:
     asl CameraCurrentY2
     lda #$01                                ; set 'load attributes' flag in a.
     _no_attributes:
-    jsr Map_WriteRow                        ; wipes out $01-$07, preserves x y
+    jsr MapSvc_WriteRow                        ; wipes out $01-$07, preserves x y
     
     lda MapBuffer_R_PPUADDR
     sta PPU_ADDR
@@ -186,20 +186,20 @@ _nextRow:
     rts
 .scend
 
-; =========================[ MapService_LoadNewData ]===========================
+; =========================[ MapSvc_LoadNewData ]===========================
 ; In:   Scroll values. Determines if new data must be loaded (rows or cols).
 ; Out:  writes rows (32 tiles) and cols (30 tiles), attributes, MapBuffer_Flags.
 ;       Updates MapBuffer_Last_X and _Y.
-MapService_LoadNewData:
+MapSvc_LoadNewData:
 .scope
 .alias  _x      $0e
 .alias  _y      $0f
 
     ; check if we need to load new superchunks.
-    jsr MapService_CheckLoadedSuperChunks
+    jsr MapSvc_CheckLoadedSuperChunks
     
     ; get the first visible subtile in x and y
-    jsr Map_GetFirstSubTilesInXY
+    jsr MapSvc_GetFirstSubTilesInXY
     stx _x          ; save x and y
     sty _y          ;   *
     
@@ -216,7 +216,7 @@ MapService_LoadNewData:
     beq +
     lda #$00
     
-*   jsr Map_LoadRow ; wipes out $00-$07
+*   jsr MapSvc_LoadRow ; wipes out $00-$07
     ldx _x
     ldy _y
     
@@ -235,7 +235,7 @@ _checkColumn:
     cmp #$C1
     beq +
     lda #$00
-*   jsr Map_LoadCol ; wipes out $00-$08
+*   jsr MapSvc_LoadCol ; wipes out $00-$08
     ldx _x
     ldy _y
 _return:
@@ -244,14 +244,14 @@ _return:
     rts
 .scend
 
-; ========================[ MapService_CopyRowColData ]=========================
+; ========================[ MapSvc_CopyRowColData ]=========================
 ; Copies row and column tiles to the PPU during VBLANK.
 ; Cycles:   27 if no data to copy.
 ;           26+479=505 if copying a column.
 ;           26+449=475 if copying a row.
 ;           25+479+449=953 if copying both column and row.
 ;           ... plus a few more to copy attributes!
-MapService_CopyRowColData:
+MapSvc_CopyRowColData:
 {
     _checkRow:                                          ; Cycles
         `CheckMapDataFlag MapData_HasRowData            ; 5    
@@ -324,19 +324,19 @@ MapService_CopyRowColData:
         rts                                             ; 6
 }
 
-; ========================[ MapService_UpdateScroll ]===========================
+; ========================[ MapSvc_UpdateScroll ]===========================
 ; 1. Bounds target.
 ; 2. Gets delta value based on difference between target & current.
 ; 3. Applies delta to current, scroll, and screen variables.
 ; NOTE: Delta greater than -8/+8 will break the tile gfx scrolling.
 ; NOTE: Delta greater than -128/+127 will break the algorithm altogether
 ; Wipes out a,x,y
-MapService_UpdateCamera:
+MapSvc_UpdateCamera:
 .scope
 .alias  delta           $00
 .alias  delta_hi        $01
 .alias  is_neg          delta_hi
-    jsr MapService_BoundTarget
+    jsr MapSvc_BoundTarget
     sec
     lda CameraTargetX
     sbc CameraCurrentX

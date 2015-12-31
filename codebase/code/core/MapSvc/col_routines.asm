@@ -1,11 +1,11 @@
 ; ==============================================================================
-; Map_LoadCol
+; MapSvc_LoadCol
 ; In:   Scroll values in Scroll_X, Scroll_X2, Scroll_Y, Scroll_Y2
 ;       x = first visible x tile, y = first visible y tile
 ;       a = 0 if load first col (scrolling left), 1 if load last col (right)
 ; Out:  writes 30 tiles to MapData_ColBuffer
 ; Note: wipes out $00 - $09
-Map_LoadCol:
+MapSvc_LoadCol:
 {
     .alias  _ppu_addr_temp      $00
 
@@ -46,14 +46,14 @@ Map_LoadCol:
     
     _load_col:
     lda #$01                    ; debug - always load attributes
-    jsr Map_WriteCol            ; wipes out $00-$07+$09, preserves $08.
+    jsr MapSvc_WriteCol            ; wipes out $00-$07+$09, preserves $08.
     `SetMapDataFlag MapData_HasColData
     
     rts
 }
 
 ; ==============================================================================
-; Map_WriteCol      Sets up a column of tiles to be copied to PPU RAM.
+; MapSvc_WriteCol      Sets up a column of tiles to be copied to PPU RAM.
 ; IN    Bank should be set to bank containing chunk data.
 ;       A is load attribute flag (1 == load)
 ;       X is X offset in subtiles. (0 - 63)
@@ -63,7 +63,7 @@ Map_LoadCol:
 ; STK   Ph/Pl two bytes on stack
 ; NOTE  Takes about 25 scanlines to execute.
 ;       Wipes out $01-$0A.
-Map_WriteCol:
+MapSvc_WriteCol:
 {
     .alias  _length             $01
     .alias  _writeindex         $02
@@ -77,7 +77,7 @@ Map_WriteCol:
     .alias  _attrIndex          $0A
     .alias  _attributebuffer    $10
     
-    ; BEGIN shared code between this and map_writerow - 41 bytes
+    ; BEGIN shared code between this and MapSvc_writerow - 41 bytes
     sta _do_attributes
     lda #$00
     sta _attrIndex
@@ -115,7 +115,7 @@ Map_WriteCol:
     
     ; get the index of the first tile to write in the column. I can't quite
     ; remember why this works, but there is similar (and better commented) code
-    ; in map_row_routines.asm
+    ; in MapSvc_row_routines.asm
     tya                             ; a = y + (y_hi >> 1) << 2
     sta _temp                       
     lda CameraCurrentY2
@@ -135,7 +135,7 @@ Map_WriteCol:
     `RestoreXY
     lda _do_attributes
     beq +
-    jsr Map_WriteAttributeCol
+    jsr MapSvc_WriteAttributeCol
 *   rts
 
     _writeColPortion:
@@ -238,7 +238,7 @@ Map_WriteCol:
 ;       y = Y offset in subtiles. (0 - 63)
 ;       16 2-bit attribute values in $0010-$001f
 ; OUT:  Writes passed attributes into appropriate bytes of MapData_Attributes
-Map_WriteAttributeCol:
+MapSvc_WriteAttributeCol:
 {
     .alias  _byte           $01
     .alias  _shift          $02
