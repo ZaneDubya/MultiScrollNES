@@ -163,9 +163,6 @@ Map_WriteCol:
         and #$01
         bne _ll
     _ul:
-        lda (Tileset_PtrUL),y
-        jmp _copyTile
-    _ll:
         lda _do_attributes              ; if (_do_attributes != 0)
         beq +                           ; {
         ldx _attrIndex                  ;   x = _attrIndex 
@@ -173,16 +170,16 @@ Map_WriteCol:
         sta _attributebuffer,x          ;   _attributebuffer[x] = a
         inx
         stx _attrIndex
-*       lda (Tileset_PtrLL),y
+*       lda (Tileset_PtrUL),y
+        jmp _copyTile
+    _ll:
+        lda (Tileset_PtrLL),y
         jmp _copyTile
     _right:
         lda _writeindex
         and #$01
         bne _lr
     _ur:
-        lda (Tileset_PtrUR),y
-        jmp _copyTile
-    _lr:
         lda _do_attributes              ; if (_do_attributes != 0)
         beq +                           ; {
         ldx _attrIndex                  ;   x = _attrIndex 
@@ -190,7 +187,10 @@ Map_WriteCol:
         sta _attributebuffer,x          ;   _attributebuffer[x] = a
         inx
         stx _attrIndex
-*       lda (Tileset_PtrLR),y
+*       lda (Tileset_PtrUR),y
+        jmp _copyTile
+    _lr:
+        lda (Tileset_PtrLR),y
         jmp _copyTile
     _copyTile:
         ldx _writeindex
@@ -247,6 +247,7 @@ Map_WriteAttributeCol:
     .alias  _shifted        $05
     
     `SaveXY
+
     
     ; each attribute table can hold only 15 metatile rows. because each
     ; superchunk is 16 metatile rows, we need to offset the attribute row we
@@ -257,8 +258,15 @@ Map_WriteAttributeCol:
     lsr
     lsr
     lsr
-    clc
+    clc                     ; add one extra 'row' per screen.
     adc CameraCurrentY2
+    sta _y_attr
+    tya                     ; affset row by one if the first y-tile is the lower tile of an attribute block.
+    and #$01
+    beq _no_inc
+    inc _y_attr
+    _no_inc:
+    lda _y_attr
     jsr Mod15
     sta _y_attr
     
