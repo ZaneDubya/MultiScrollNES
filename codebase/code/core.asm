@@ -1,10 +1,9 @@
-; core.asm - the place where all code located in the fixed PRGROM bank is
-; included. In a final release, this will include spacing bytes to reduce
-; page crossing branches.
-.require "includes.asm"
+; core.asm - contains code located in the fixed PRGROM bank at $C000.
+; For final release, include spacing bytes to reduce page crossing branches.
 
 ; ==============================================================================
 ; included code files.
+.require "includes.asm"
 .include "core/interrupts.asm"
 .include "core/famitone2.asm"
 .include "core/library.asm"
@@ -20,17 +19,17 @@
 .include "debug.asm"
 
 ; ==============================================================================
-; RunOneFrame   The main engine routine. Called from NMI. Runs all code, loads
-;               all data, and sets up data for the next NMI to load during
-;               vblank. When this ends, the processor returns to NMI.
+; RunOneFrame   Called from NMI once per frame if FlagMainInProcess is clear.
+;               Runs all code that counts as a single update.
+;               Sets up data to load during next NMI.
+; RET           Falls through to the endless loop at the end of Startup.
 RunOneFrame:
     `SetGameFlag FlagMainInProcess
     
-    `DebugShadePPU_Grey
-    jsr FamiToneUpdate
-    jsr UpdateTimers                        ; update Timer1 and Timer2
-    jsr Input_Get                           ; poll gamepad
-    jsr UpdateGameMode                      ; Main routine for updating game.
+    jsr FamiToneUpdate              ; music engine - should go at end of nmi.
+    jsr UpdateTimers                ; update Timer1 and Timer2
+    jsr Input_Get                   ; poll gamepad
+    jsr UpdateGameMode              ; Main routine for updating game.
     
 ; Write sprites to OAM buffer.
     `DebugShadePPU_Blue
@@ -69,7 +68,7 @@ UpdateGameMode:
 ;                   from the stack.
 ; IN    Pointer in stack, A as index.
 ; OUT   JSR to address at pointer+(A*2)
-; NOTES Wipes out $00-$03.
+; CLBR  Clobbers $00-$03.
 ChooseRoutine:
 {
 .alias _TempX               $0000

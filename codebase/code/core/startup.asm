@@ -1,4 +1,5 @@
-;----------------------------------[ Reset ]------------------------------------
+; ==============================================================================
+; Reset         This is the 'reset' vector, called on reset interrupt.
 Reset:
     cld                             ; processor to binary mode
     sei                             ; disable IRQ
@@ -11,9 +12,10 @@ Reset:
     stx GameFlags                   ; clear initialized flag (and all others)
                                     ; fall through to Startup
 
-;---------------------------------[ Startup ]-----------------------------------
-; NMI is off, Screen is off, rendering is off.
-; we have disabled interrupts and cancelled pending interrupts.
+; ==============================================================================
+; Startup       Sets up the initial gamestate, which will be updated next NMI.
+;               Then enters an endless loop. When we enter this code, NMI and
+;               Screen, interrupts, and pending interrupts (mmc3) are disabled.
     stx APU_DMC_FREQ                    ; APU_DMC_FREQ = $00
     dex                                 ; x = $ff
     txs                                 ; S points to end of stack page
@@ -59,5 +61,8 @@ Reset:
     
     `FT_PlaySong $00
     
-    ; Enter infinite loop
+    ; Fall through to infinite loop
+    
+; ==============================================================================
+; EndlessLoop       The game is here when not in NMI or RunOneFrame.
 *   jmp -                           ; infinite loop
