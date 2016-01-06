@@ -110,24 +110,22 @@ Actor data array in active memory (16 x 16b actors 'alive', 256b total)
             M - is moving.
             C - aCtion - running action.
             A - Active; has been instantiated. (if 0, empty actor slot).
-            
-    $0x10   Actor_X - X pixel position in superchunk
-    $0x20   Actor_Y - Y pixel position in superchunk
-    $0x30   Actor_SuperChunk - Superchunk this actor is located within.
-            Wraps at 15.
-    $0x40   Actor_DrawData0
+    $0x10   Actor_Definition (0-255)
+            Index into Actor Definitions.
+    $0x20   Actor_DrawData0
             7654 3210
             cccc ffpp
             p = palette (4-7)
             f = facing.
             c = chrram tile index for first tile.
-    $0x50   Actor_DrawData1
+    $0x30   Actor_DrawData1
             this depends on the actor. For 'combat' actors, it is:
             m..i iiii
             m = draw movement sprite, otherwise draw sprite with index i
-    $0x60   UNUSED
-    $0x70   Actor_Definition (0-255)
-            Index into Actor Definitions.
+    $0x40   Actor_X - X pixel position in superchunk
+    $0x50   Actor_Y - Y pixel position in superchunk
+    $0x60   Actor_SuperChunkX - Superchunk this actor is located within.
+    $0x70   Actor_SuperChunkY - Superchunk this actor is located within.
     $0x80   Actor_ScriptPtr & Actor_ScriptPtrHi
             2-byte pointer to current executing script
     $0xA0   Actor_Var0 - Actor_Var5

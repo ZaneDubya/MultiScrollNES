@@ -1,6 +1,6 @@
 Milestone A
-    1. The player actor loads.
-        Need debug actor data for player.
+    1. The player actor loads. DONE
+        Need debug actor data for player. DONE
     2. The player actor moves in a random direction and stops.
         Need action handling for 'stand', 'wait', and 'move'.
         Tile handling routines for actors.

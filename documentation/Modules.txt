@@ -1,5 +1,6 @@
 Kernel
     Module loading and transitioning. Data headers.
+    
 Menu Module
     1. Start
     2. Party
@@ -16,12 +17,14 @@ Menu Module
     13. Shop
     Tutorial mode.
     
-Field Module
+World Module
     Events - scripting engine
     Conversation
+        Build
+        Display
     Walking
     Blocking
-    NPCs
+    Actors
     
 Battle Module
 

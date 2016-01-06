@@ -57,7 +57,7 @@
 .alias  CameraBoundB        $004E
 .alias  CameraBoundB2       $004F
 
-; $005x - $00Bx - Map data.
+; $005x - $00Ax - Map data.
 .alias  MapBuffer           $0050
 .alias  MapBuffer_SC_UL_X   MapBuffer+$00
 .alias  MapBuffer_SC_UL_Y   MapBuffer+$01
@@ -75,7 +75,8 @@
 .alias  SprPalette3         MapBuffer+$0F   ; Sprite Pal 3
 .alias  MapData_RowBuffer   MapBuffer+$10   ; $006x Buffers for VBLANK PPU data.
 .alias  MapData_ColBuffer   MapBuffer+$30   ; $008x Buffers for VBLANK PPU data.
-.alias  MapData_Chunks      MapBuffer+$50   ; $00Ax Indexes of on-screen superchunks.
+.alias  MapData_Chunks      MapBuffer+$50   ; $00Ax 4 screens worth of superchunk
+                                            ;       indexes.
 
 ; $00Bx - available.
 
@@ -122,13 +123,13 @@
 ; $03xx  - Actor data (16 total). AVAILABLE: NONE.
 ; for description of this data, see ref.data\Engines\Actor Data.txt
 .alias  Actor_Bitflags          $0300   
-.alias  Actor_X                 $0310
-.alias  Actor_Y                 $0320
-.alias  Actor_SuperChunk        $0330
-.alias  Actor_DrawData0         $0340
-.alias  Actor_DrawData1         $0350
-.alias  Actor_UNUSED            $0360
-.alias  Actor_Definition        $0370
+.alias  Actor_Definition        $0310
+.alias  Actor_DrawData0         $0320
+.alias  Actor_DrawData1         $0330
+.alias  Actor_X                 $0340
+.alias  Actor_Y                 $0350
+.alias  Actor_SuperChunkX       $0360
+.alias  Actor_SuperChunkY       $0370
 .alias  Actor_ScriptPtr         $0380
 .alias  Actor_ScriptPtrHi       $0390
 .alias  Actor_Var0              $03A0

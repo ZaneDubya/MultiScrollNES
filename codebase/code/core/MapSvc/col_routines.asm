@@ -45,8 +45,8 @@ MapSvc_LoadCol:
     pla                                 ; a = 0 if scrolling left, 1 if right.
     
     _load_col:
-    lda #$01                    ; debug - always load attributes
-    jsr MapSvc_WriteCol            ; wipes out $00-$07+$09, preserves $08.
+    lda #$01                            ; debug - always load attributes
+    jsr MapSvc_WriteCol                 ; wipes out $00-$07+$09, preserves $08.
     `SetMapDataFlag MapData_HasColData
     
     rts
@@ -77,37 +77,13 @@ MapSvc_WriteCol:
     .alias  _attrIndex          $0A
     .alias  _attributebuffer    $10
     
-    ; BEGIN shared code between this and MapSvc_writerow - 41 bytes
     sta _do_attributes
     lda #$00
     sta _attrIndex
     
     `SaveXY
     
-    txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
-    lsr
-    lsr
-    lsr
-    lsr
-    sta _chunk
-    tya
-    and #$30
-    lsr
-    lsr
-    ora _chunk
-    sta _chunk
-
-    txa                             ; tile = ((x & $0e) >> 1) | ((y & $0e) << 2)
-    and #$0e
-    lsr
-    sta _tile
-    tya
-    and #$0e
-    asl
-    asl
-    ora _tile
-    sta _tile
-    ; END shared code
+    jsr MapSvc_GetChunkAndTile
     
     txa                             ; use right col tiles if (x & $01) == 1
     and #$01
@@ -141,17 +117,7 @@ MapSvc_WriteCol:
     _writeColPortion:
     _getChunkPointer:
         ldx _chunk                      ; get pointer to the current chunk
-        `SetPointer _ChunkPtr, ChunkData
-        lda MapData_Chunks,x
-        and #$c0
-        `addm _ChunkPtr
-        sta _ChunkPtr
-        bcc +
-        inc _ChunkPtrHi
-    *   lda MapData_Chunks,x
-        and #$3f
-        `addm _ChunkPtrHi
-        sta _ChunkPtrHi
+        jsr MapSrv_GetChunkPtr
     _getTile:
     *   ldy _tile
         lda (_ChunkPtr),y

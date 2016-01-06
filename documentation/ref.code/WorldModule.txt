@@ -1,4 +1,4 @@
-WorldMode. Handles:
+World Module. Handles:
     (1) walking around, 
     (2) eggs (scripts),
     (3) interacting with objects (chests, items to pick up, etc.), 

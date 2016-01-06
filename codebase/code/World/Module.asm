@@ -1,8 +1,9 @@
 .require "../includes.asm"
+.include "Movement.asm"
 
 ; =============================================================================
 ;   ModeWorld: handles controls, etc, for world.
-ModeWorld:
+World_Frame:
 {
     jsr World_CheckScroll               ; debug - scroll on dpad
     jsr World_CheckController

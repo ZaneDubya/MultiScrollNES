@@ -81,37 +81,13 @@ MapSvc_WriteRow:
     .alias  _attrIndex          $09
     .alias  _attributebuffer    $10
     
-    ; BEGIN shared code between this and MapSvc_writecol
     sta _do_attributes
     lda #$00
     sta _attrIndex
     
     `SaveXY
     
-    txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
-    lsr
-    lsr
-    lsr
-    lsr
-    sta _chunk
-    tya
-    and #$30
-    lsr
-    lsr
-    ora _chunk
-    sta _chunk
-
-    txa                             ; tile = ((x & $0e) >> 1) | ((y & $0e) << 2)
-    and #$0e
-    lsr
-    sta _tile
-    tya
-    and #$0e
-    asl
-    asl
-    ora _tile
-    sta _tile
-    ; END shared code
+    jsr MapSvc_GetChunkAndTile
     
     tya                                 ; use lower tiles if (y & $01) == 1
     and #$01
@@ -143,17 +119,7 @@ MapSvc_WriteRow:
     _writeRowPortion:
     _getChunkPointer:
         ldx _chunk                      ; get pointer to the current chunk
-        `SetPointer _ChunkPtr, ChunkData
-        lda MapData_Chunks,x
-        and #$c0
-        `addm _ChunkPtr
-        sta _ChunkPtr
-        bcc +
-        inc _ChunkPtrHi
-    *   lda MapData_Chunks,x
-        and #$3f
-        `addm _ChunkPtrHi
-        sta _ChunkPtrHi
+        jsr MapSrv_GetChunkPtr
     _getSubTile:
         lda _length                     ; if (writeindex == length) then return
         cmp _writeindex                 ;   |

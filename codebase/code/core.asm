@@ -14,7 +14,7 @@
 .include "core/MapSvc.asm"
 .include "core/startup.asm"
 .include "core/exception.asm"
-.include "ModeWorld/ModeWorld.asm"
+.include "World/Module.asm"
 .include "ModeText/ModeText.asm"
 .include "debug.asm"
 
@@ -57,7 +57,7 @@ UpdateGameMode:
     jsr ChooseRoutine       ; Use GameMode as index into routine table below.
     
 .word Reset                 ; Setting GameMode = 0 will reset the game
-.word ModeWorld             ; World engine, for the overworld
+.word World_Module          ; World engine, for the overworld
 .word TextEngine            ; Text Engine
 
 ; ==============================================================================

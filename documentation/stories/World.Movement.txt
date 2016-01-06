@@ -1,0 +1,164 @@
+GOAL: Handle player actor movement based on dpad.
+
+WorldModule:Movement:Stories
+
+STORY: Controller input (dpad) controls the player actor. With no input, the player is not moving, and is in a 'none' action with facing. With input, the player is moving, with a 'moving' action with facing. PSEUDO.
+
+STORY: When two opposite pads are down, the player does not move in either direction; they cancel each other out. PSEUDO.
+
+STORY: When the player is moving, they animate. [in actor]
+
+STORY: When the player runs into a wall, they snap to wall position and stop moving. Blocking is at moving corner 0 + moving corner 1. PSEUDO
+
+STORY: When the player runs into a wall, with two pads down, they move in the direction of the unblocked pad, with facing equal to unblocked direction. PSEUDO
+
+STORY: When the player is blocked on one corner but not on the other, the player moves in the unblocked direction (if it is unblocked in that direction), but the facing remains in the requested direction. PSEUDO
+
+WorldModule:Movement:Code
+
+byte movex = 0;
+byte movey = 0;
+bool moveboth = 0;
+byte bothblocked = 0;
+byte actorx, actorxhi
+byte actory, actoryhi
+byte chunk, metatile
+bool keepfacing = player.ismoving;
+
+if (Ctrl0_Now & pad_urdl == 0)
+{
+    player.ismoving = false;
+    return;
+}
+else
+{
+    byte ctrl = Ctrl0_Now & pad_lr;
+    if (ctrl == 0)
+        goto input_ud
+    if (ctrl == pad_lr) // impossible on original nes, but with kb...
+        keepfacing = false; // allow facing to change.
+        goto input_ud
+    
+    moveboth = 1;
+    if (ctrl == pad_left) // move left
+    {
+        movex = speed & negative;
+        
+    }
+    else // move right
+    {
+        movex = speed + 15;
+    }
+        
+input_ud:
+    byte ctrl = Ctrl0_Now & pad_ud;
+    if (ctrl == 0)
+    {
+        moveboth &= 0;
+        goto facing;
+    }
+    if (ctrl == pad_lr) // impossible on original nes, but with kb...
+    {
+        keepfacing = false; // allow facing to change.
+        moveboth &= 0;
+        goto facing;
+    }
+    
+    moveboth &= 1;
+    if (ctrl == pad_up) // move up
+    {
+        movey = speed & negative;
+    }
+    else // move down
+    {
+        movey = speed + 15;
+    }
+}
+
+facing:
+    if (keepfacing)
+        goto movement
+    if (speedx != 0)
+        if (speedx is negative)
+            facing = left
+        else
+            facing = right
+    if (speedy != 0)
+        if (speedy is negative)
+            facing = up
+        else
+            facing = down
+
+movement: // do movement and blocking here.
+    if (movex == 0)
+        goto movement_y
+    if (movex is negative) // moving left
+        // copy actor data to local copies
+        actorx -= speed & 0xf7
+        if carry clear, actorxhi--
+        if negative set, is blocked (edge of map)
+        check_x:
+        jsr check_block_x  //returns 1 in a if blocked, 0 otherwise
+        a <<= 1 // clc + asl
+        bothblocked = a;
+        add 32 to y
+        jsr check_block_x - return 1 in a if blocked
+        ora bothblocked
+        if (a == 0) // neither blocked
+            // apply speed to actual actor data (check if is negative)
+            lda speedx
+            if negative
+            {
+                actor.x -= speed & 0xf7
+                if carry clear
+                    actor.xhi--;
+            }
+            else
+            {
+                actor.x += speed & 0xf7
+                if carry set                  
+                    actor.xhi++
+            }
+            goto movement_y
+        if (a == 3) // yes, both blocked
+            actorx = actorx & 0xf0
+            goto movement_y
+        if (a == 2) // blocked btm but not top
+            actorx = actorx & 0xf0
+            if (moveboth)
+                goto movement_y
+            else
+                movey = speed & negative
+                moveboth = true
+                goto movement_y
+        else // a == 1 - blocked top but not btm
+            actorx = actorx & 0xf0
+            if (moveboth)
+                goto movement_y
+            else
+                movey = speed
+                moveboth = true
+                goto movement_y
+    else // moving right
+        // copy actor data to local copies
+        actorx += speed
+        if carry set, actorxhi++
+        if actorxhi == camera_block_hi, is blocked (edge of map)
+        jmp check_x
+    movement_y:
+        // do similar checks for y.
+        
+    check_block_x:
+        // in: local copies of xy and xhi and yhi
+        // out: a if blocked
+        // get chunk and metatile from x and xhi
+        // 76543210 76543210
+        // .......c cmmm....
+        metatile = (x & 0x70 >> 4) + (y & 0x70 >> 1)
+        chunk = (x ? neg) 1 : 0 + (hix & 0x01 != 0) 2 : 0 +
+                (y ? neg) 4 : 0 + (hiy & 0x01 != 0) 8 : 0;
+        get bits from tile.
+        if block
+            return 1
+        else
+            return 0

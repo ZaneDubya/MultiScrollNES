@@ -191,22 +191,21 @@ MapSvc_LoadSuperChunk:
         ldy #$00                            ; reset Y to 0
         lda (_SuperChunkPtr),y              ; load the superchunk flags
         sta _SC_Flags                       ; save the flags
-        and #$01                            ; if bit 1 = 0, no data in this SC.
-        bne _hasChunks                      ;
-        ldx _ChunksOffset                   ;
-        sta MapData_Chunks,x                    ; a = 0
-        inx
-        sta MapData_Chunks,x
-        inx
-        inx
-        inx
-        sta MapData_Chunks,x
-        inx
-        sta MapData_Chunks,x
-        jmp _return
-    _hasChunks:
-    ; load the chunk indexes into Chunks_0
-        ldx _ChunksOffset
+        and #$01                            ; if (bit 1 = 0) 
+        bne _hasChunks                      ; {
+        ldx _ChunksOffset                   ;   zero out chunks in this sc
+        sta MapData_Chunks,x                ;   |
+        inx                                 ;   |
+        sta MapData_Chunks,x                ;   |
+        inx                                 ;   |
+        inx                                 ;   |
+        inx                                 ;   |
+        sta MapData_Chunks,x                ;   |
+        inx                                 ;   |
+        sta MapData_Chunks,x                ;   +
+        jmp _return                         ;   return
+    _hasChunks:                             ; } else {
+        ldx _ChunksOffset                   ;   load chunk indexes into ZP
     *   iny
         lda (_SuperChunkPtr),y
         sta MapData_Chunks,x
@@ -227,7 +226,7 @@ MapSvc_LoadSuperChunk:
 }
 
 ; ==============================================================================
-; bounds a point at x=$00-$01,y=$02-$03 to the CameraBound variables.
+; bounds CameraTarget to CameraBound.
 MapSvc_BoundTarget:
 {
     .alias  x_l     CameraTargetX
@@ -295,4 +294,67 @@ MapSvc_BoundTarget:
         sta y_l
     _return:
         rts
+}
+
+; ==============================================================================
+; MapSrv_GetChunkPtr - Gets a ptr to one chunk's worth of metatiles (64) 
+; In:   chunk index in x
+; Out:  ptr to chunk data in $06-$07
+MapSrv_GetChunkPtr: 
+{
+    .alias  _ChunkPtr           $06
+    .alias  _ChunkPtrHi         $07
+    `SetPointer _ChunkPtr, ChunkData    ; constant in defines_banks.asm
+    lda MapData_Chunks,x                ; get chunkptr from ZP. Chunkptr is
+    and #$c0                            ; 1b: llhhhhhh. See Map Data.txt
+    `addm _ChunkPtr
+    sta _ChunkPtr
+    bcc +
+    inc _ChunkPtrHi
+*   lda MapData_Chunks,x
+    and #$3f
+    `addm _ChunkPtrHi
+    sta _ChunkPtrHi
+    rts
+}
+
+; ==============================================================================
+; MapSvc_GetChunkAndTile - from x and y subtile, gets metatile and chunk.
+; in:   x is 0-63, subtile
+;       y is 0-63, subtile
+; 1. sets _chunk ($03) to (x >> 4) | ((y & $30) >> 2)
+; 2. sets _tile ($04) to ((x & $0e) >> 1) | ((y & $0e) << 2)
+; 3. returns to calling routine.
+MapSvc_GetChunkAndTile:
+{
+    .alias  _chunk              $03
+    .alias  _tile               $04
+    
+    ; get chunk: 0-15
+    txa                             ; chunk = (x >> 4) | ((y & $30) >> 2)
+    lsr
+    lsr
+    lsr
+    lsr
+    sta _chunk
+    tya
+    and #$30
+    lsr
+    lsr
+    ora _chunk
+    sta _chunk
+    
+    ; get tile: 0-63    
+    txa                             ; tile = ((x & $0e) >> 1) | ((y & $0e) << 2)
+    and #$0e
+    lsr
+    sta _tile
+    tya
+    and #$0e
+    asl
+    asl
+    ora _tile
+    sta _tile
+    
+    rts
 }

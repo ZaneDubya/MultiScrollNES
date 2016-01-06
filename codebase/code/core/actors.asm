@@ -35,7 +35,7 @@ Actors_DrawActors:
         sta _sprite_x
         lda Actor_Y,x
         sta _sprite_y
-        lda Actor_SuperChunk,x
+        lda Actor_SuperChunkX,x
         sta _sprite_superchunk
         
         lda Actor_Definition,x          ; a = actor definition index

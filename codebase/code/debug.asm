@@ -95,7 +95,7 @@ Debug_CreatePlayerActor:
     `add 9
     pha
     lda #$00
-    sta Actor_SuperChunk,x
+    sta Actor_SuperChunkX,x
     lda #$00
     sta Actor_Definition,x
     jsr SprLdr_AllocTiles

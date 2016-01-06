@@ -3,7 +3,7 @@
 Reset:
     cld                             ; processor to binary mode
     sei                             ; disable IRQ
-    sta $e000                       ; acknowledge/disable the IRQ (MMC3)
+    ;sta $e000                       ; acknowledge/disable the IRQ (MMC3)
     
     `Mapper_Setup                   ; set up the Mapper (A53, MMC1, MMC3, etc.)
     ldx #$00                        ; Clear PPU control registers
