@@ -57,7 +57,7 @@ UpdateGameMode:
     jsr ChooseRoutine       ; Use GameMode as index into routine table below.
     
 .word Reset                 ; Setting GameMode = 0 will reset the game
-.word World_Module          ; World engine, for the overworld
+.word World_Update          ; World engine, for the overworld
 .word TextEngine            ; Text Engine
 
 ; ==============================================================================

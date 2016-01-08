@@ -30,12 +30,12 @@ if (Ctrl0_Now & pad_urdl == 0)
     player.ismoving = false;
     return;
 }
-else
-{
+input_lr:
     byte ctrl = Ctrl0_Now & pad_lr;
     if (ctrl == 0)
         goto input_ud
     if (ctrl == pad_lr) // impossible on original nes, but with kb...
+        
         keepfacing = false; // allow facing to change.
         goto input_ud
     
@@ -94,10 +94,10 @@ movement: // do movement and blocking here.
         goto movement_y
     if (movex is negative) // moving left
         // copy actor data to local copies
-        actorx -= speed & 0xf7
+        actorx -= speed & 0x7f
         if carry clear, actorxhi--
         if negative set, is blocked (edge of map)
-        check_x:
+    check_x:
         jsr check_block_x  //returns 1 in a if blocked, 0 otherwise
         a <<= 1 // clc + asl
         bothblocked = a;
@@ -109,13 +109,13 @@ movement: // do movement and blocking here.
             lda speedx
             if negative
             {
-                actor.x -= speed & 0xf7
+                actor.x -= speed & 0x7f
                 if carry clear
                     actor.xhi--;
             }
             else
             {
-                actor.x += speed & 0xf7
+                actor.x += speed & 0x7f
                 if carry set                  
                     actor.xhi++
             }

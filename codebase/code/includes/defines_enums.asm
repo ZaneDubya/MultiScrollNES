@@ -48,11 +48,20 @@
 .alias  PPUOp_SubRoutine    $14
 
 ; defines for controller reading
-.alias PAD_A                $0001
-.alias PAD_B                $0002
-.alias PAD_SELECT           $0004
-.alias PAD_START            $0008
-.alias PAD_UP               $0010
-.alias PAD_DOWN             $0020
-.alias PAD_LEFT             $0040
-.alias PAD_RIGHT            $0080
+.alias  CTRL_A              $0001
+.alias  CTRL_B              $0002
+.alias  CTRL_SELECT         $0004
+.alias  CTRL_START          $0008
+.alias  CTRL_UP             $0010
+.alias  CTRL_DOWN           $0020
+.alias  CTRL_LEFT           $0040
+.alias  CTRL_RIGHT          $0080
+.alias  CTRL_UDLR           $00F0
+.alias  CTRL_UPDOWN         $0030
+.alias  CTRL_LEFTRIGHT      $00C0
+
+; defines for facings
+.alias  FACING_UP           $00
+.alias  FACING_RIGHT        $01
+.alias  FACING_DOWN         $02
+.alias  FACING_LEFT         $03

@@ -70,7 +70,7 @@ TextEngine4:
     lda Ctrl0_New
     bne +
     rts
-*   and #PAD_A
+*   and #CTRL_A
     bne +
     rts
 *   inc TEXT_Stage
