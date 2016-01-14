@@ -29,12 +29,13 @@ echo %mapperdir%
 
 REM Delete existing work directory and create a new work directory
 if not exist %workdir% goto make_work_dir
-rmdir /s /q %workdir%
-REM wait while the directory is deleted...
 echo Cleaning OBJ folder...
-timeout /t 1 /nobreak >NUL
+call utilities/clrdir %workdir%
+REM wait while the directory is deleted...
 :make_work_dir
+if exist %workdir% goto made_work_dir
 mkdir %workdir%
+:made_work_dir
 
 REM Copy prg/code/data from the source directory to the work directory.
 REM PRG Files.
@@ -65,11 +66,13 @@ for /f "tokens=1-2 delims=," %%G in (%workdir%/prg.txt) do (
 )
 
 if not exist bin goto move
-rmdir /s /q bin
+call utilities/clrdir bin
 echo Cleaning BIN folder...
 timeout /t 1 /nobreak >NUL
 :move
+if exist bin goto made_bin_dir
 mkdir bin
+:made_bin_dir
 
 REM Combine the banks
 echo Combining banks into ROM:
