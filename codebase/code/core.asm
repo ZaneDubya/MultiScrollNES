@@ -13,8 +13,8 @@
 .include "core/MapSvc.asm"
 .include "core/startup.asm"
 .include "core/exception.asm"
-.include "World/Module.asm"
-.include "ModeText/ModeText.asm"
+.include "World/WorldMode.asm"
+.include "Text/TextMode.asm"
 .include "debug.asm"
 
 ; ==============================================================================

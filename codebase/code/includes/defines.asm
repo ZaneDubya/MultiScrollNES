@@ -5,11 +5,10 @@
 ; ================================ Memory Aliases =============================
 
 ; $000x - $003x - Scratch space  ----------------------------------------------
-; 64b total. Any routine can overwrite these.
+; 64b total. Any routine can overwrite these. Used as a fake stack for SmallC.
 
 
 ; $004x - Camera variables ----------------------------------------------------
-; AVAILABLE: NONE 
 .alias  CameraCurrentX      $0040
 .alias  CameraCurrentX2     $0041
 .alias  CameraCurrentY      $0042
@@ -74,7 +73,6 @@
 
 
 ; $00Dx -- Actor sort array ---------------------------------------------------
-; AVAILABLE: NONE
 .alias  Actor_SortArray     $00D0   ; List of Actors, sorted based on y value
                                     ; $80 = no Actor in this slot.
                                     ; highest y value should be in highest slot
@@ -83,9 +81,9 @@
 ; $00E2x - core variables -----------------------------------------------------
 ; AVAILABILE: $EC-$EF (4)
 .alias  GameMode            $00E0
-.alias  GameFlags           $00E1
-.alias  BankIn8000          $00E2
-.alias  BankIn8000_Saved    $00E3
+.alias  GameModeState       $00E1    
+.alias  GameModeReturn      $00E2
+.alias  GameFlags           $00E3
 .alias  FrameCount          $00E4   ; Increments each frame, rolls over at 256.
 .alias  Ctrl0_Now           $00E5   ; control pad - current status
 .alias  Ctrl0_Last          $00E6   ; control pad - status last frame

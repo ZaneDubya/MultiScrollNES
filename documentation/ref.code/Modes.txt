@@ -1,0 +1,50 @@
+The game is divided into modes. Only one mode can be active at any time.
+
+=== Initializing a Mode ===
+When a mode is first called, GameMode will be set.
+
+=== Changing Modees ===
+To change modes, the current mode should first save whatever state is necessary, then 
+set GameMode to the index of the new mode, and GameModeState to $00. Then the mode should
+turn off the PPU display. On the next frame update, the kernel will pass control to the new mode.
+
+Each mode is entirely responsible for initializing, updating, and saving its own state.
+
+    X_Frame     Called when the mode is initialized. Responsible for getting the proper initialization state,
+                setting all variables (including cleaning up variables as required), loading music and graphics,
+                and ending if necessary.
+    X_Update    Called once a frame when the mode is active. Responsible for managing the mode state, 
+                getting input, updating the display, and setting the next mode to enter as necessary.
+    X_End       Cleans up as necessary.    
+
+Kernel
+    Mode loading and transitioning. Data headers.
+    
+Menu Module
+    1. Start
+    2. Party
+    3. Item
+    4. Magic
+    5. Eqip
+    6. Stat
+    7. Change
+    8. Limit
+    9. Config
+    10. Form
+    11. Save
+    12. Name
+    13. Shop
+    Tutorial mode.
+    
+World Module
+    Events - scripting engine
+    Conversation
+        Build
+        Display
+    Walking
+    Blocking
+    Actors
+    
+Battle Module
+
+Minigame Modules
