@@ -2,7 +2,6 @@
 ; For final release, include spacing bytes to reduce page crossing branches.
 
 ; ==============================================================================
-; included code files.
 .require "includes.asm"
 .include "core/interrupts.asm"
 .include "core/famitone2.asm"
@@ -24,6 +23,7 @@
 ;               Sets up data to load during next NMI.
 ; RET           Falls through to the endless loop at the end of Startup.
 RunOneFrame:
+{
     `SetGameFlag FlagMainInProcess
     
     jsr FamiToneUpdate              ; music engine - should go at end of nmi.
@@ -31,20 +31,21 @@ RunOneFrame:
     jsr Input_Get                   ; poll gamepad
     jsr UpdateGameMode              ; Main routine for updating game.
     
-; Write sprites to OAM buffer.
+    ; Write sprites to OAM buffer.
     `DebugShadePPU_Blue
     jsr Sprite_BeginFrame
     jsr Actors_DrawActors
     jsr Sprite_EndFrame
     
-; Load new map data
+    ; Load new map data
     `DebugShadePPU_Green
     jsr MapSvc_LoadNewData
 
-; Clear the flag main_in_progress and return
+    ; Clear the flag main_in_progress and return
     `DebugShadePPU_Normal   
     `ClearGameFlag FlagMainInProcess
     rts
+}
 
 ; ==============================================================================
 ; UpdateGameMode    This is where the real code of each frame is executed.
@@ -53,12 +54,14 @@ RunOneFrame:
 ;                   GameMode is used as the index of the table we want to call,
 ;                   and the routine at that index is executed.
 UpdateGameMode:
+{
     lda GameMode
     jsr ChooseRoutine       ; Use GameMode as index into routine table below.
     
-.word Reset                 ; Setting GameMode = 0 will reset the game
-.word World_Update          ; World engine, for the overworld
-.word TextEngine            ; Text Engine
+    .word Reset                 ; Setting GameMode = 0 will reset the game
+    .word World_Update          ; World engine, for the overworld
+    .word TextEngine            ; Text Engine
+}
 
 ; ==============================================================================
 ; ChooseRoutine     This is an indirect jump routine. A is used as an index into
@@ -71,10 +74,10 @@ UpdateGameMode:
 ; CLBR  Clobbers $00-$03.
 ChooseRoutine:
 {
-.alias _TempX               $0000
-.alias _TempY               $0001
-.alias _CodePtr             $0002   ;Points to address to jump to when choosing
-;      CodePtr+1            $0003   ;a routine from a list of routine addresses.
+    .alias _TempX               $0000
+    .alias _TempY               $0001
+    .alias _CodePtr             $0002   ;Points to address to jump to when choosing
+    ;      CodePtr+1            $0003   ;a routine from a list of routine address
 
     asl                             ; * 2, as each ptr is 2 bytes (16-bit).
     sty _TempY                      ; Temp storage.
