@@ -32,28 +32,28 @@ values between the in context mode and NMI handler.
 
 
 === Saving and Restoring Mode State ===
-A mode may have space in RAM to store state. When a mode exits context, it may use this dedicated
-RAM space to save whatever variables would be necessary to restore the state of the mode when it
-next begins.
+The programmer may reserve space in RAM to store a mode's state. When a mode exits context, it
+may use this dedicated RAM space to save whatever variables would be necessary to restore the
+state of the mode when it next enters context.
 
 
-=== Passing variables between modes ===
-
-
-
-=== Changing Modees ===
+=== Changing Modes ===
 To change modes, the current mode should first save whatever state is necessary, then 
 set GameMode to the index of the new mode, and GameModeState to $00. Then the mode should
-turn off the PPU display. On the next frame update, the kernel will pass control to the new mode.
+turn off the PPU display. A mode may set paramters for the next mode to be called by either
+changing the value of that mode's state variables, or by setting the value of variables at
+the top of the fake stack. On the next frame update, the kernel will pass control to the
+new mode.
 
-Each mode is entirely responsible for initializing, updating, and saving its own state.
-
-    X_Frame     Called when the mode is initialized. Responsible for getting the proper initialization state,
-                setting all variables (including cleaning up variables as required), loading music and graphics,
-                and ending if necessary.
-    X_Update    Called once a frame when the mode is active. Responsible for managing the mode state, 
-                getting input, updating the display, and setting the next mode to enter as necessary.
-    X_End       Cleans up as necessary.    
+The kernel provides the SetState routine to faciliate changing mode:
+    SetState(byte newMode, param byte[] newModeParameters);
+    
+=== Fading in and out ===
+The kernel provides the FadeIn and FadeOut routine to facilitate transitions between modes:
+    FadeIn();
+    FadeOut();
+    
+While FadeIn or FadeOut is active, the in context mode will not be updated.
 
 Kernel
     Mode loading and transitioning. Data headers.
