@@ -1,5 +1,9 @@
 === Overview ===
-The game is divided into modes. Only one mode is 'in context' (active) at any time.
+The game is divided into modes. Only one mode is 'in context' (active) at any time. The in
+context mode is updated once a frame, and has exclusive control of all memory except for
+reserved state memory (see 'Saving and Restoring Mode State'). All modes that are out of
+context are not updated, and cannot rely on the state of any memory values when they come
+back in context, except for that mode's reserved state memory, if any.
 
 Each mode is identified by a unique 8b index value. Whenever the GameMode variable is set to
 that mode's index value, that mode is in context and will run once a frame, so long as the
@@ -58,8 +62,8 @@ While FadeIn or FadeOut is active, the in context mode will not be updated.
 
 
 === Modes ===
-Core        NMI
-            Reset
+Kernel      Update timers, input, in context mode, music, OAM.
+Reset
 Menu        Start
             Continue
             Config
@@ -69,7 +73,7 @@ Cutscene
 Map         
 World       Scripting
             QuickText
-            Display
+            Display map
             Walking
             Blocking
             Actors
@@ -80,5 +84,5 @@ Character   Stats
             Inventory   
             ItemDetails 
             Merchant    
-            SpellSkills
+            SpellBook
 MiniGames
