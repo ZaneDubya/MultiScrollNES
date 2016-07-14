@@ -1,0 +1,33 @@
+TinyC is a hypothetical C-like language for the 6502. It uses a pseudostack to give functions fast access to parameters and local values.
+
+=== Program Structure ===
+Comments
+    //
+    /* ... */
+
+Preprocessor directives
+    #include
+    #incbin
+    
+Global Declarations
+    byte i;                         byte variables (8-bit), may have initial value
+    word i;                         word variables (16-bit), may have initial value
+    const byte i = 1;               constants of bytes or words
+    byte[x] i or word[x] i;         arrays of bytes or words
+    byte* i or word* i;             pointers to bytes or words
+    f(...)                          functions
+    
+Functions
+    Must occur at global level, outside of other function declarations.
+    Consist of two parts: declarator and body.
+    Declarator states name, names and types of parameter arguments within required parenthasis pair.
+        void func(byte i)
+        byte func()
+        word func(word i, byte i)
+    Body consists of statement between brackets that does function work.
+        Compound statements (nested brackets) are allowed.
+    Flow of Control
+        Execution begins with first statement. Functions returning a value must have a "return x" statement.
+
+Global variables
+    Variables outside of a function are accessible by any function.
