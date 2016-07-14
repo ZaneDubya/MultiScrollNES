@@ -47,7 +47,8 @@ new mode.
 
 The kernel provides the SetState routine to faciliate changing mode:
     SetState(byte newMode, param byte[] newModeParameters);
-    
+
+
 === Fading in and out ===
 The kernel provides the FadeIn and FadeOut routine to facilitate transitions between modes:
     FadeIn();
@@ -55,34 +56,29 @@ The kernel provides the FadeIn and FadeOut routine to facilitate transitions bet
     
 While FadeIn or FadeOut is active, the in context mode will not be updated.
 
-Kernel
-    Mode loading and transitioning. Data headers.
-    
-Menu Module
-    1. Start
-    2. Party
-    3. Item
-    4. Magic
-    5. Eqip
-    6. Stat
-    7. Change
-    8. Limit
-    9. Config
-    10. Form
-    11. Save
-    12. Name
-    13. Shop
-    Tutorial mode.
-    
-World Module
-    Events - scripting engine
-    Conversation
-        Build
-        Display
-    Walking
-    Blocking
-    Actors
-    
-Battle Module
 
-Minigame Modules
+=== Modes ===
+Core        NMI
+            Reset
+Menu        Start
+            Continue
+            Config
+            Load
+            Save
+Cutscene    
+Map         
+World       Scripting
+            QuickText
+            Display
+            Walking
+            Blocking
+            Actors
+Battle      
+Chest       
+Camping     
+Character   Stats       
+            Inventory   
+            ItemDetails 
+            Merchant    
+            SpellSkills
+MiniGames
