@@ -1,4 +1,4 @@
-TinyC is a hypothetical C-like language for the 6502. It uses a pseudostack to give functions fast access to parameters and local values.
+MiniC is a hypothetical C-like language for the 6502. It uses a pseudostack to give functions fast access to parameters and local values.
 
 === Program Structure ===
 Comments
@@ -18,11 +18,11 @@ Labels
     Label:
     
 Global Declarations
-    byte i;                         byte variables (8-bit), may have initial value
-    word i;                         word variables (16-bit), may have initial value
-    const byte i = 1;               constants of bytes or words
-    byte[x] i or word[x] i;         arrays of bytes or words
-    byte* i or word* i;             pointers to bytes or words
+    byte i;                         unsigned byte variables (8-bit), may have initial value
+    word i;                         unsigned word variables (16-bit), may have initial value
+    const byte i = 1;               constants of unsigned bytes or words
+    byte[x] i or word[x] i;         arrays of unsigned bytes or words
+    byte* i or word* i;             pointers to unsigned bytes or words
     f(...)                          functions
     
 Functions
@@ -44,3 +44,16 @@ Functions
 
 Global variables
     Variables outside of a function are accessible by any function.
+
+Example:
+void main() {
+    byte a = 1;
+    byte b = 2;
+    byte c = 3;
+    byte d = dosomething(a, b, c);
+}
+
+byte dosomething(byte a, byte b, byte c) {
+    byte d = a + b + c;
+    return d;
+}
