@@ -6,8 +6,16 @@ Comments
     /* ... */
 
 Preprocessor directives
-    #include
-    #incbin
+    .include
+    .incbin
+    .require
+    .db
+    .dw
+    .asm
+    .endasm
+    
+Labels
+    Label:
     
 Global Declarations
     byte i;                         byte variables (8-bit), may have initial value
@@ -25,9 +33,14 @@ Functions
         byte func()
         word func(word i, byte i)
     Body consists of statement between brackets that does function work.
+        { and }
         Compound statements (nested brackets) are allowed.
     Flow of Control
-        Execution begins with first statement. Functions returning a value must have a "return x" statement.
+        Execution begins with first statement.
+        Execution ends with return or at closing body bracket.
+        Functions returning a value must have a "return x" statement.
+        Functions returning void must have no return statement.
+        Return value is at top of fake stack.
 
 Global variables
     Variables outside of a function are accessible by any function.
