@@ -1,4 +1,4 @@
-Instruction,Acc,Imm,ZP,"ZP,X","ZP,Y",Rel,Abs,"Abs,X","Abs,Y",Ind,"(Ind,X)","(Ind,Y)",Imp
+,Acc,Imm,ZP,"ZP,X","ZP,Y",Rel,Abs,"Abs,X","Abs,Y",Ind,"(Ind,X)","(Ind,Y)",Imp
 ADC,,2,3,4,,,4,4+1,4+1,,6,5+1,
 AND,,2,3,4,,,4,4+1,4+1,,6,5+1,
 ASL,2,,5,6,,,6,7,,,,,
