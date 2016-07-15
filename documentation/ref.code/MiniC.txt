@@ -57,3 +57,43 @@ byte dosomething(byte a, byte b, byte c) {
     byte d = a + b + c;
     return d;
 }
+
+// main: fsb = 0, fss = 4, 0 in
+ldx #$00
+lda #$01
+sta $00,x
+lda #$02
+sta $01,x
+lda #$03
+sta $02,x
+// call dosomething
+txa
+pha
+tay
+clc
+adc #$04
+tax
+lda #$0000,y
+sta $00,x
+lda #$0001,y
+sta $01,x
+lda #$0002,y
+sta $02,x
+jsr dosomething
+lda memory_return
+sta $03,x
+// end main
+
+// dosomething: fss = 4, 3 in
+lda $02,x
+clc
+adc $01,x
+clc
+adc $00,x
+sta $03,x       \__ Optimize out, and reduce fss as this variable is otherwise unused.
+lda $03,x       /
+sta memory_return
+pla
+tax
+rts
+// end dosomething
