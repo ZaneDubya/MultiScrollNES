@@ -1,0 +1,98 @@
+=== Overview ===
+The game is divided into modes. Only one mode is 'in context' (active) at any time. The in
+context mode is updated once a frame, and has exclusive control of all memory except for
+reserved state memory of other modes (see 'Saving and Restoring Mode State') and memory 
+reserved for kernel functions. All modes that are out of context are not updated, and
+cannot rely on the state of any memory values when they come back in context, except for
+that mode's reserved state memory, if any.
+
+Each mode is identified by a unique 8b index value. Whenever the GameMode variable is set to
+that mode's index value, that mode is in context and will run once a frame, so long as the
+previous frame completed before the NMI occured. If the previous frame did not complete
+before NMI occured, then the current frame's routine will be interrupted by NMI, the kernel
+will run its operations that are necessary for every frame (e.g. music), and then return
+control to the in-progress frame routine.
+
+Modes may determine whether they have been initialized by reading the GameModeState variable.
+GameModeState should be set to $00 when the GameMode variable is changed. A mode may indicate
+that it has initialized itself by setting the GameModeState to any other value.
+
+
+=== State when the Mode changes ===
+When the game changes which mode is in context, the index of GameMode will be set to that
+mode's index value, GameModeState will be $00, and PPU rendering will be disabled.
+
+A Mode may use GameModeState as an indication that the Mode has not been initialized, and
+thus run initialization code and change GameModeState to a value other than $00.
+Alternatively, a Mode can ignore the value of GameModeState altogether.
+
+Regardless of whether the mode initializes itself, it is responsible for enabling PPU
+rendering if it needs to display anything.
+
+
+=== Mode use of the real and fake stacks ===
+The in context mode shares use of the real stack with the NMI handler. However, the NMI handler
+must clean up its use of the stack after it ends, so from the point of the in context mode, it
+has exclusive control of the real stack. However, use of the real stack must not exceed $40
+values between the in context mode and NMI handler.
+
+The in context mode has exclusive control of the fake stack: its update routine may initialize
+variables starting at index $00, and may use variables up to index $3f. Thus, an out-of-context
+mode must not store values that must be saved in the fake stack.
+
+
+=== Saving and Restoring Mode State ===
+The programmer may reserve space in memory to store a mode's state. During the mode's operations
+while in context, the mode may use this dedicated memory space to update state. When that mode
+exits context, it may use this dedicated memory space to save values necessary to restore the
+state of the mode when it next enters context. Modes other than the owner mode must not change
+the value of this reserved space in memory.
+
+
+=== Changing Modes ===
+To change modes, the current mode should first save whatever state is necessary, then 
+set GameMode to the index of the new mode, and GameModeState to $00. Then the mode should
+turn off the PPU display. A mode may set paramters for the next mode to be called by either
+changing the value of that mode's state variables, or by setting the value of variables at
+the top of the fake stack. On the next frame update, the kernel will pass control to the
+new mode.
+
+The kernel provides the SetState routine to faciliate changing mode:
+    SetState(byte newMode, param byte[] newModeParameters);
+    
+    This code will cause the current mode to immediately end.
+
+
+=== Fading in and out ===
+The kernel provides the FadeIn and FadeOut routine to facilitate transitions between modes:
+    FadeIn();
+    FadeOut();
+    
+While FadeIn or FadeOut is active, the in context mode will not be updated.
+
+
+=== Possible Modes ===
+Kernel      Update timers, input, in context mode, music, OAM.
+Reset
+Menu        Start
+            Continue
+            Config
+            Load
+            Save
+Cutscene    
+Map         
+World       Scripting
+            QuickText
+            Display map
+            Walking
+            Blocking
+            Actors
+Battle      
+Chest       
+Camping     
+Character   Stats       
+            Inventory   
+            ItemDetails 
+            Merchant    
+            SpellBook
+MiniGames

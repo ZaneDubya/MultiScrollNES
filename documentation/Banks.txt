@@ -27,9 +27,17 @@ BANK    ADDR    SIZE    DESCRIPTION
 
 03      C000    1000    DPCM reserved space (4kb)
         D000     800    SFX reserved space (2kb)    
-        D800     600    Tileset 00 - this will go in a 'tileset' bank.
+        D800     600    Tileset 00 - in a larger game, would go into 'tileset' or 'data' bank.
         DE00      80    Sprite Headers (4b ea, 32 total).
         DE80      80    Actor Headers (8b ea, 16 total).
         DF00      20    Map Headers (4b ea, 8 total).
         DF20      E0    Palettes (224b, 3b ea, 74 total + 2b)
-        E000    2000    Core Engine Code
+        E000    2000    Kernel Code
+
+		
+
+Hypothetical MMC3 mapper banks
+8000 - 2000b    fixed       kernel1.
+A000 - 2000b    swappable   data, graphics (512 tiles per bank), music, and engines.
+C000 - 2000b    swappable   dpcm samples
+E000 - 2000b    fixed       kernal0.

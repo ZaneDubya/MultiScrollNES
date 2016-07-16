@@ -1,0 +1,353 @@
+DeciC65 (dc65) is a hypothetical C-like language for the NES/6502. It is called 'deciC' because
+it has only a tenth of the features of full C. It uses a pseudostack in zp to give functions fast
+access to parameters and local values.
+
+=== Program Structure ===
+Comments
+    //
+    /* ... */
+
+Preprocessor directives
+    #include
+    #incbin
+    #require
+    #db
+    #dw
+    #asm
+    #endasm
+    
+Labels
+    Label:
+    
+Global Declarations
+    byte i;                         unsigned byte variables (8-bit), may have initial value
+    word i;                         unsigned word variables (16-bit), may have initial value
+    const byte i = 1;               constants of unsigned bytes or words
+    byte[] i or word[] i;           arrays of unsigned bytes or words
+    byte* i or word* i;             pointers to unsigned bytes or words
+    f(...)                          functions
+    
+Other tokens
+    0xXX or 0xXXXX                  hexadecimal byte or word.
+    'n', '@', '\0', '\x00'          "character" (byte) constants
+    "abcd"                          "string" (byte array) constants.
+    
+Scope
+    Variables are scoped within the block in which they are declared.
+    Variables declared outside of any brackets has global scope.
+    Variables with same name as global variable or superior block temporarily supersede higher level vars.
+    
+Variables
+    Words are 16-bit unsigned quantities. When two words or a word and a byte are combined, the
+    result is a word.
+    Bytes are 8-bit unsigned quantities. When two bytes are combined, the result is a byte.
+    
+Pointers
+    Variables that contain an address in memory.
+    
+Functions
+    Must occur at global level, outside of other function declarations.
+    Consist of two parts: declarator and body.
+    Declarator states name, names and types of parameter arguments within required parenthasis pair.
+        void func(byte i)
+        byte func()
+        word func(word i, byte i)
+    Body consists of statement between brackets that does function work.
+        { and }
+        Compound statements (nested brackets) are allowed.
+    Flow of Control
+        Execution begins with first statement.
+        Execution ends with return or at closing body bracket.
+        Functions returning a value must have a "return x" statement.
+        Functions returning void must have no return statement.
+        Return value is at top of fake stack.
+    Argument Passing
+        Typically by value with no connection between argument and its source.
+
+Global variables
+    Variables outside of a function are accessible by any function.
+    
+Expressions by Precedence and Evaluation Order
+    1. ->   {}  function call
+            []  subscript
+            ()  parenthasis
+    2. <-   !   logical NOT
+            ~   one's complement
+            ++  increment
+            --  decrement,
+            -   unary minus
+            *   indirection
+            &   address
+            sizeof() size of
+    3. ->   *   multiply
+            /   divide
+            %   modulus
+    4. ->   +   addition
+            -   subtraction
+    5. ->   <<  shift left
+            >>  shift right
+    6. ->   &   bitwise AND
+       ->   ^   bitwise exclusive OR
+       ->   |   bitwise inclusive OR
+       ->   &&  logical AND
+       ->   ||  logical OR
+    7. ->   ==  is equal
+            !=  is not equal
+    8. <-   =   assign
+            +=  add and assign
+            -=  subtract and assign
+            *=  multiply and assign
+            /=  divide and assign
+            %=  modulo and assign
+            &=  bitwise AND and assign
+            |=  bitwise OR and assign
+            ^=  bitwise XOR and assign
+            <<= left shift and assign
+            >>= right shift and assign
+
+Example
+void main() {
+    byte a = 1;
+    byte b = 2;
+    byte c = 3;
+    byte d = dosomething(a, b, c);
+}
+
+byte dosomething(byte a, byte b, byte c) {
+    byte d = a + b + c;
+    return d;
+}
+
+// main: fsb = 0, fss = 4, 0 in
+ldx #$00
+lda #$01
+sta $00,x
+lda #$02
+sta $01,x
+lda #$03
+sta $02,x
+// call dosomething
+    txa
+    pha
+    tay
+    clc
+    adc #$04
+    tax
+    lda #$0000,y
+    sta $00,x
+    lda #$0001,y
+    sta $01,x
+    lda #$0002,y
+    sta $02,x
+    jsr dosomething
+    lda memory_return
+    sta $03,x
+// end main
+
+// dosomething: fss = 4, 3 in
+    lda $00,x
+    clc
+    adc $01,x
+    clc
+    adc $02,x
+    sta $03,x       \__ Optimize out and reduce fss as this variable (d) is otherwise unused.
+    lda $03,x       /
+    sta memory_return
+    pla
+    tax
+    rts
+// end dosomething
+
+=== Expressions to Assembly: Local values ===============================================
+Expression                  MiniCInput                      Assembly Output
+Def byte                    byte b;                         // &b = fss++
+
+Def byte and init           byte b = 100;                   // &b = fss++
+                                                            lda #100
+                                                            sta b,x
+
+Def word                    word w;                         // &w_lo = fss++
+                                                            // &w_hi = fss++
+
+Def word and init           word w = 1000;                  // &w_lo = fss++
+                                                            // &w_hi = fss++
+                                                            lda #232
+                                                            sta w_lo,x
+                                                            lda #3
+                                                            sta w_hi,x
+
+Def byte array              byte ba[5];                     // &ba = fss;
+                                                            // fss += 5;
+
+Def byte array and init     byte ba[5] = {0,1,2,3,4};       // &ba = fss;
+                                                            // fss += 5;
+                                                            txa
+                                                            clc
+                                                            adc #ba
+                                                            tay
+                                                            lda #00
+                                                            sta $00,y
+                                                            iny
+                                                            lda #01
+                                                            sta $00,y
+                                                            iny
+                                                            lda #02
+                                                            sta $00,y
+                                                            iny
+                                                            lda #03
+                                                            sta $00,y
+                                                            iny
+                                                            lda #04
+                                                            sta $00,y
+
+Access byte array value     ba[3];                          lda [b+3],x
+
+Set byte array value        ba[3] = 5;                      lda #5
+                                                            sta [b+3],x
+
+Access byte array value     ba[b];                          txa
+                                                            clc
+                                                            adc #ba
+                                                            clc
+                                                            adc b
+                                                            tay
+                                                            lda $00,y
+
+Set byte array value        ba[b] = 5;                      txa
+                                                            clc
+                                                            adc #ba
+                                                            clc
+                                                            adc b
+                                                            tay
+                                                            lda #5
+                                                            sta $00,y
+
+Logical Not                 !b;                             eor #$ff
+
+Pre-increment               ++b;                            inc b
+
+Pre-increment and assign    b1 = ++b;                       inc b
+                                                            lda b
+                                                            sta b1
+
+Post-increment              b++;                            inc b
+
+Post-increment and assign   b1 = b++;                       lda b
+                                                            sta b1
+                                                            inc b
+                                                            
+Address of                  &b;                             lda #b
+
+Indirect access             *b;                             ldy b
+                                                            lda $00,y
+                            **b;                            ldy b
+                                                            lda $00,y
+                                                            tay
+                                                            lda $00,y
+
+Addition                    b + 5;                          lda b
+                                                            clc
+                                                            adc #5
+
+Addition and Assign         b += 5;                         lda b
+                                                            clc
+                                                            adc #5
+                                                            sta b
+
+Division                    b / 5;                          // handled by library routine
+
+Modulus                     b % 5;                          // handled by library routine
+
+Equality                    b == 5;                         lda b
+                                                            cmp #5
+
+Equality and assign         b = b == 5;                     lda b
+                                                            cmp #5
+                                                            beq _eq0
+                                                            lda #00         ; FALSE
+                                                            beq _eq1
+                                                            _eq0:
+                                                            lda #01         ; TRUE
+                                                            _eq1:
+                                                            sta b
+
+Conditional assign          if (b)                          lda b
+                                                            beq _else
+                                b = 5;                      lda #5
+                                                            sta b
+                                                            jmp _endif
+                            else b = 10;                    _else:
+                                                            lda #10
+                                                            sta b
+                                                            _endif:
+
+Conditional assign          if (b != 1)                     lda b
+                                                            cmp #1
+                                                            beq _endif
+                                b = 5;                      lda #5
+                                                            sta b
+                                                            _endif:
+
+Switch statement            switch (b) {                    lda b
+                                case 90:                    cmp #90
+                                case 91:                    beq _case0
+                                    b = 5;                  cmp #91
+                                    break;                  beq _case0
+                                case 100:                   cmp #100
+                                case 101:                   beq _case1
+                                    b = 10;                 cmp #101
+                                    break;                  beq _case1
+                                default:                    lda #255
+                                    b = 255;                sta b
+                            }                               jmp _endswitch
+                                                            _case0:
+                                                            lda #5
+                                                            sta b
+                                                            jmp _endswitch
+                                                            _case1:
+                                                            lda #10
+                                                            sta b
+                                                            _endswitch:
+
+While statement             while (--b)                     _while:
+                                dosomething(b);             dec b
+                                                            beq _endwhile
+                                                            txa
+                                                            pha
+                                                            tay
+                                                            clc
+                                                            adc #1
+                                                            tax
+                                                            lda b,y
+                                                            sta $0,x
+                                                            jsr dosomething
+                                                            jmp _while
+                                                            _endwhile:
+                                                            ...
+                                                            dosomething:
+                                                            ...
+                                                            pla
+                                                            tax
+                                                            rts
+While statement             while (b--)                     _while:
+                                dosomething(b);             lda b
+                                                            dec b
+                                                            eor #0
+                                                            beq _endwhile
+                                                            txa
+                                                            pha
+                                                            tay
+                                                            clc
+                                                            adc #1
+                                                            tax
+                                                            lda b,y
+                                                            sta $0,x
+                                                            jsr dosomething
+                                                            jmp _while
+                                                            _endwhile:
+                                                            ...
+                                                            dosomething:
+                                                            ...
+                                                            pla
+                                                            tax
+                                                            rts

@@ -2,44 +2,13 @@
 ;       * Memory Aliases
 ;       * Enumerations & Defines
 ;       * Registers
-; ================================ Memory Aliases ==============================
-; $000x - Scratch space. Any routine can overwrite these.
-; $001x - Scratch space. Any routine can overwrite these.
+; ================================ Memory Aliases =============================
 
-; $002x - core variables. AVAILABILE: $2C-$2F (4).
-.alias  GameMode            $0020
-.alias  GameFlags           $0021
-.alias  BankIn8000          $0022
-.alias  BankIn8000_Saved    $0023
-.alias  FrameCount          $0024   ; Increments each frame, rolls over at 256.
-.alias  Ctrl0_Now           $0025   ; control pad - current status
-.alias  Ctrl0_Last          $0026   ; control pad - status last frame
-.alias  Ctrl0_New           $0027   ; control pad - new button pushes
-.alias  TVSystem            $0028   ; 0=ntsc, 1=pal, 2=dendy, 3=unknown
-.alias  Screen_X            $0029   ; NMI's local copy of CameraCurrentX
-.alias  Screen_Y            $002A   ; Y offset for screen. Rolls over at 239.
-.alias  Player_ActorIndex   $002B   ; $80 if no player actor, otherwise $00-$0F
+; $000x - $003x - Scratch space  ----------------------------------------------
+; 64b total. Any routine can overwrite these. Used as a fake stack for SmallC.
 
-; $003x - values for library routines. AVAILABLE: $37-$3C (6)
-.alias  Random_Seed         $0030
-.alias  TimerDelay          $0031   ; Count down from 9 to 0. Dec each frame.
-.alias  Timer1              $0032   ; Decremented every frame after set.
-.alias  Timer2              $0033   ; Decremented every 10 frames after set.
-.alias  Multiplier          $0034
-.alias  Numerator           $0034
-.alias  Multiplicand        $0035
-.alias  Denominator         $0035
-.alias  MultiplySum         $0035
-.alias  MultiplySumHi       $0036
-.alias  ErrorAddr           $0037
-.alias  ErrorAddrHi         $0038
-.alias  Mod15Temp           $0034
 
-.alias  OamCurrentSprChk    $003D
-.alias  OamCurrentIndex     $003E
-.alias  OamFull             $003F
-
-; $004x - Camera variables. AVAILABLE: NONE
+; $004x - Camera variables ----------------------------------------------------
 .alias  CameraCurrentX      $0040
 .alias  CameraCurrentX2     $0041
 .alias  CameraCurrentY      $0042
@@ -57,7 +26,9 @@
 .alias  CameraBoundB        $004E
 .alias  CameraBoundB2       $004F
 
-; $005x - $00Ax - Map data.
+
+; $005x - $00Ax - Map data ----------------------------------------------------
+; AVAILABLE: $005B
 .alias  MapBuffer           $0050
 .alias  MapBuffer_SC_UL_X   MapBuffer+$00
 .alias  MapBuffer_SC_UL_Y   MapBuffer+$01
@@ -68,7 +39,6 @@
 .alias  MapBuffer_Flags     MapBuffer+$08   ; see MapData enum
 .alias  MapBuffer_RA_Index  MapBuffer+$09   ; Attribute Row Index.
 .alias  MapBuffer_CA_Index  MapBuffer+$0A   ; Attribute Column Index.
-;$005B - Available.
 .alias  SprPalette0         MapBuffer+$0C   ; Sprite Pal 0
 .alias  SprPalette1         MapBuffer+$0D   ; Sprite Pal 1
 .alias  SprPalette2         MapBuffer+$0E   ; Sprite Pal 2
@@ -78,9 +48,17 @@
 .alias  MapData_Chunks      MapBuffer+$50   ; $00Ax 4 screens worth of superchunk
                                             ;       indexes.
 
-; $00Bx - available.
 
-; $00Cx - The currently loaded tileset
+; $00Bx - Sprite Loader Library. AVAILABLE: $00B6-$00BF (10 - maybe!) ---------
+.alias  SprLdr_NMIAddress       $00B0 ; address to load data to in NMI.
+.alias  SprLdr_NMIAddressHi     $00B1 ; 
+.alias  SprLdr_LoadThisSlot     $00B2 ; current slot being loaded
+.alias  SprLdr_LoadThisTile     $00B3 ; next tile to load (0,8,16,24,32,48,etc.)
+.alias  SplLdr_TilesToLoad      $00B4 ; max tile to load (16,32,48,or 64)
+.alias  SprLdr_LoadOpReady      $00B5 ; 1 if ready to load tiles, 0 if not.
+
+
+; $00Cx - The currently loaded tileset ----------------------------------------
 .alias  Tileset_ZP          $00C0
 .alias  Tileset_PtrBits     Tileset_ZP+$00
 .alias  Tileset_PtrAttribs  Tileset_ZP+$02
@@ -93,34 +71,61 @@
 .alias  Tileset_Pal2        Tileset_ZP+$0E
 .alias  Tileset_Pal3        Tileset_ZP+$0F
 
-; $00Dx -- Actor sort array. AVAILABLE: NONE.
+
+; $00Dx -- Actor sort array ---------------------------------------------------
 .alias  Actor_SortArray     $00D0   ; List of Actors, sorted based on y value
                                     ; $80 = no Actor in this slot.
                                     ; highest y value should be in highest slot
 
-; $00Ex - Sprite Loader Library.
-.alias  SprLdr_NMIAddress       $00E0 ; address to load data to in NMI.
-.alias  SprLdr_NMIAddressHi     $00E1 ; 
-.alias  SprLdr_LoadThisSlot     $00E2 ; current slot being loaded
-.alias  SprLdr_LoadThisTile     $00E3 ; next tile to load (0,8,16,24,32,48,etc.)
-.alias  SplLdr_TilesToLoad      $00E4 ; max tile to load (16,32,48,or 64)
-.alias  SprLdr_LoadOpReady      $00E5 ; 1 if ready to load tiles, 0 if not.
+
+; $00E2x - core variables -----------------------------------------------------
+; AVAILABILE: $EC-$EF (4)
+.alias  GameMode            $00E0
+.alias  GameModeState       $00E1    
+.alias  GameModeReturn      $00E2
+.alias  GameFlags           $00E3
+.alias  FrameCount          $00E4   ; Increments each frame, rolls over at 256.
+.alias  Ctrl0_Now           $00E5   ; control pad - current status
+.alias  Ctrl0_Last          $00E6   ; control pad - status last frame
+.alias  Ctrl0_New           $00E7   ; control pad - new button pushes
+.alias  TVSystem            $00E8   ; 0=ntsc, 1=pal, 2=dendy, 3=unknown
+.alias  Screen_X            $00E9   ; NMI's local copy of CameraCurrentX
+.alias  Screen_Y            $00EA   ; Y offset for screen. Rolls over at 239.
+.alias  Player_ActorIndex   $00EB   ; $80 if no player actor, otherwise $00-$0F
 
 
-                                    
-; $00Fx - Flags and save data. AVAILABLE: $F4 - $FF (12)
-.alias  ProgressFlag0           $00F0 ; $F0-$F2 = 24 bits of progression
-.alias  TemporaryFlag           $00F3 ; unsaved, reset on location change
+; $00Fx - values for library routines -----------------------------------------
+; AVAILABLE: $F7-$FC (6)
+.alias  Random_Seed         $00F0
+.alias  TimerDelay          $00F1   ; Count down from 9 to 0. Dec each frame.
+.alias  Timer1              $00F2   ; Decremented every frame after set.
+.alias  Timer2              $00F3   ; Decremented every 10 frames after set.
+.alias  Multiplier          $00F4
+.alias  Numerator           $00F4
+.alias  Multiplicand        $00F5
+.alias  Denominator         $00F5
+.alias  MultiplySum         $00F5
+.alias  MultiplySumHi       $00F6
+.alias  ErrorAddr           $00F7
+.alias  ErrorAddrHi         $00F8
+.alias  Mod15Temp           $00F4
+.alias  OamCurrentSprChk    $00FD
+.alias  OamCurrentIndex     $00FE
+.alias  OamFull             $00FF
 
-; $01xx - Famitone and Stack. AVAILABLE: $01BA - $01BE (63)
+
+; $01xx - Famitone and Stack --------------------------------------------------
+; AVAILABLE: $01BA - $01BE (63)
 .alias  FT_BASE_ADR             $0100   ; $BA bytes.   
 .alias  STACK_OVERFLOW          $01BF
 ; $01C0 - $01FF - Stack (64b)
 
-; $02xx - OAM Buffer. AVAILABLE: NONE.
+
+; $02xx - OAM Buffer ----------------------------------------------------------
 .alias  OAM_BUFFER              $0200
 
-; $03xx  - Actor data (16 total). AVAILABLE: NONE.
+
+; $03xx  - Actor data (16 total) ----------------------------------------------
 ; for description of this data, see ref.data\Engines\Actor Data.txt
 .alias  Actor_Bitflags          $0300   
 .alias  Actor_Definition        $0310
@@ -139,7 +144,8 @@
 .alias  Actor_Var4              $03E0
 .alias  Actor_Var5              $03F0
 
-; $04xx - Sprite Loader Library
+
+; $04xx - Sprite Loader Library -----------------------------------------------
 .alias  SprLdr_SpriteIndexes    $0400
 .alias  SprLdr_UsageCounts      $0410 
 .alias  SprLdr_TileAddressesLo  $0420
@@ -147,6 +153,7 @@
 ; $043x - available
 .alias  MapData_Attributes      $0440   ; $40 bytes - attribute table 0
 ; $0480 - $04ff is AVAILABLE.
+
 
 ; $05xx - AVAILABLE.
 
