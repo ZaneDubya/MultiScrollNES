@@ -105,7 +105,36 @@ Expressions by Precedence and Evaluation Order
             <<= left shift and assign
             >>= right shift and assign
 
-Example
+=== Memory ===================================================================
+DeciC65 uses three types of memory: the DeciC stack in zp, the 6502 stack, and
+the heap in high memory.
+
+The DeciC stack (dstack) is located in zp, and is used to store all local vars,
+including pointers. The dstack stack begins at programmer-assigned low address
+(ex: $00 or $20) and grows upwards as functions are called. Becasue the dstack
+exists in zp, there is a hard limit to the size of the dstack. A programmer may
+further limit the size of the dstack, but this will reduce the number of
+functions that can be called recursively. DeciC can optionally check the bounds
+of the dstack on every function call and exit with and error code if the dstack
+exceeds the limit.
+
+The state of the dstack is defined by two variables: dsb (stack base) and dss
+(stack size). Dss is constant for a given function and equals the amount of
+stack space that the function needs to hold all its parameters and local
+variables. Dss is set by the compiler. Dsb is the current base of the stack.
+Parameters to the function begin at Dsb, local variables begin at Dsb + 
+sizeof(parameters). Dss = sizeof(parameters) + sizeof(local variables).
+
+The 6502 stack is only used to store the return address and dsb of a calling
+function.
+
+The DeciC heap is stored in high memory. This is where arrays, strings, and
+global variables are stored.
+
+In addition, DeciC needs a small amount of memory for library functions and
+space for return values.
+
+=== Example ==================================================================
 void main() {
     byte a = 1;
     byte b = 2;
@@ -140,6 +169,8 @@ sta $02,x
     lda #$0002,y
     sta $02,x
     jsr dosomething
+    pla
+    tax
     lda memory_return
     sta $03,x
 // end main
@@ -153,8 +184,6 @@ sta $02,x
     sta $03,x       \__ Optimize out and reduce fss as this variable (d) is otherwise unused.
     lda $03,x       /
     sta memory_return
-    pla
-    tax
     rts
 // end dosomething
 
