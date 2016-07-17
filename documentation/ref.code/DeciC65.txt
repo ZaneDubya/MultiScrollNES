@@ -35,14 +35,14 @@ Labels (Label:)
     
 Global Declarations
     char i;                         unsigned char variables (8-bit), may have initial value
-    word i;                         unsigned word variables (16-bit), may have initial value
-    const char i = 1;               constants of unsigned chars or words
-    char[] i or word[] i;           arrays of unsigned chars or words
-    char* i or word* i;             pointers to unsigned chars or words
+    short i;                        unsigned short variables (16-bit), may have initial value
+    const char i = 1;               constants of unsigned chars or shorts
+    char[] i or short[] i;          arrays of unsigned chars or shorts
+    char* i or short* i;            pointers to unsigned chars or shorts
     f(...)                          functions
     
 Other tokens
-    0xXX or 0xXXXX                  hexadecimal char or word.
+    0xXX or 0xXXXX                  hexadecimal char or short.
     'n', '@', '\0', '\x00'          character (8 bit char) constants
     "abcd"                          string (char array) constants.
     
@@ -52,8 +52,8 @@ Scope
     Variables with same name as global variable or superior block temporarily supersede higher level vars.
     
 Variables
-    Words are 16-bit unsigned quantities. When two words or a word and a char are combined, the
-    result is a word.
+    Shorts are 16-bit unsigned quantities. When two shorts or a short and a char are combined, the
+    result is a short.
     Chars are 8-bit unsigned quantities. When two chars are combined, the result is a char.
     
 Pointers
@@ -65,7 +65,7 @@ Functions
     Declarator states name, names and types of parameter arguments within required parenthasis pair.
         void func(char i)
         char func()
-        word func(word i, char i)
+        short func(short i, char i)
     Body consists of statement between brackets that does function work.
         { and }
         Compound statements (nested brackets) are allowed.
@@ -213,10 +213,10 @@ Def char and init           char b = 100;                   // &b = fss++
                                                             lda #100
                                                             sta b,x
 
-Def word                    word w;                         // &w_lo = fss++
+Def short                   short w;                        // &w_lo = fss++
                                                             // &w_hi = fss++
 
-Def word and init           word w = 1000;                  // &w_lo = fss++
+Def short and init          short w = 1000;                 // &w_lo = fss++
                                                             // &w_hi = fss++
                                                             lda #232
                                                             sta w_lo,x
