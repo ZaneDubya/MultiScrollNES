@@ -15,7 +15,8 @@ Preprocessor directives
     #dw
     #asm
     #endasm
-    #define
+    #define - sets a value as constant
+    #alias - sets a variable to a constant place in memory.
     
 Expression Statements
     goto
