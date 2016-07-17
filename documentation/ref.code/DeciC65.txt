@@ -34,17 +34,17 @@ Labels (Label:)
     Indicates a destination for a goto statement.
     
 Global Declarations
-    byte i;                         unsigned byte variables (8-bit), may have initial value
+    char i;                         unsigned char variables (8-bit), may have initial value
     word i;                         unsigned word variables (16-bit), may have initial value
-    const byte i = 1;               constants of unsigned bytes or words
-    byte[] i or word[] i;           arrays of unsigned bytes or words
-    byte* i or word* i;             pointers to unsigned bytes or words
+    const char i = 1;               constants of unsigned chars or words
+    char[] i or word[] i;           arrays of unsigned chars or words
+    char* i or word* i;             pointers to unsigned chars or words
     f(...)                          functions
     
 Other tokens
-    0xXX or 0xXXXX                  hexadecimal byte or word.
-    'n', '@', '\0', '\x00'          "character" (byte) constants
-    "abcd"                          "string" (byte array) constants.
+    0xXX or 0xXXXX                  hexadecimal char or word.
+    'n', '@', '\0', '\x00'          character (8 bit char) constants
+    "abcd"                          string (char array) constants.
     
 Scope
     Variables are scoped within the block in which they are declared.
@@ -52,9 +52,9 @@ Scope
     Variables with same name as global variable or superior block temporarily supersede higher level vars.
     
 Variables
-    Words are 16-bit unsigned quantities. When two words or a word and a byte are combined, the
+    Words are 16-bit unsigned quantities. When two words or a word and a char are combined, the
     result is a word.
-    Bytes are 8-bit unsigned quantities. When two bytes are combined, the result is a byte.
+    Chars are 8-bit unsigned quantities. When two chars are combined, the result is a char.
     
 Pointers
     Variables that contain an address in memory.
@@ -63,9 +63,9 @@ Functions
     Must occur at global level, outside of other function declarations.
     Consist of two parts: declarator and body.
     Declarator states name, names and types of parameter arguments within required parenthasis pair.
-        void func(byte i)
-        byte func()
-        word func(word i, byte i)
+        void func(char i)
+        char func()
+        word func(word i, char i)
     Body consists of statement between brackets that does function work.
         { and }
         Compound statements (nested brackets) are allowed.
@@ -154,14 +154,14 @@ space for return values.
 
 === Example ==================================================================
 void main() {
-    byte a = 1;
-    byte b = 2;
-    byte c = 3;
-    byte d = dosomething(a, b, c);
+    char a = 1;
+    char b = 2;
+    char c = 3;
+    char d = dosomething(a, b, c);
 }
 
-byte dosomething(byte a, byte b, byte c) {
-    byte d = a + b + c;
+char dosomething(char a, char b, char c) {
+    char d = a + b + c;
     return d;
 }
 
@@ -207,9 +207,9 @@ sta $02,x
 
 === Expressions to Assembly: Local values ===============================================
 Expression                  MiniCInput                      Assembly Output
-Def byte                    byte b;                         // &b = fss++
+Def char                    char b;                         // &b = fss++
 
-Def byte and init           byte b = 100;                   // &b = fss++
+Def char and init           char b = 100;                   // &b = fss++
                                                             lda #100
                                                             sta b,x
 
@@ -223,10 +223,10 @@ Def word and init           word w = 1000;                  // &w_lo = fss++
                                                             lda #3
                                                             sta w_hi,x
 
-Def byte array              byte ba[5];                     // &ba = fss;
+Def char array              char ba[5];                     // &ba = fss;
                                                             // fss += 5;
 
-Def byte array and init     byte ba[5] = {0,1,2,3,4};       // &ba = fss;
+Def char array and init     char ba[5] = {0,1,2,3,4};       // &ba = fss;
                                                             // fss += 5;
                                                             txa
                                                             clc
@@ -247,12 +247,12 @@ Def byte array and init     byte ba[5] = {0,1,2,3,4};       // &ba = fss;
                                                             lda #04
                                                             sta $00,y
 
-Access byte array value     ba[3];                          lda [b+3],x
+Access char array value     ba[3];                          lda [b+3],x
 
-Set byte array value        ba[3] = 5;                      lda #5
+Set char array value        ba[3] = 5;                      lda #5
                                                             sta [b+3],x
 
-Access byte array value     ba[b];                          txa
+Access char array value     ba[b];                          txa
                                                             clc
                                                             adc #ba
                                                             clc
@@ -260,7 +260,7 @@ Access byte array value     ba[b];                          txa
                                                             tay
                                                             lda $00,y
 
-Set byte array value        ba[b] = 5;                      txa
+Set char array value        ba[b] = 5;                      txa
                                                             clc
                                                             adc #ba
                                                             clc
