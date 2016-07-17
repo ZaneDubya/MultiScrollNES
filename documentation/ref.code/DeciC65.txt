@@ -15,9 +15,22 @@ Preprocessor directives
     #dw
     #asm
     #endasm
+    #define
     
-Labels
-    Label:
+Expression Statements
+    goto
+    if () ... [ else ... ]
+    case () { case x: ... break; case y: ... break; default: ... break; }
+    while ()
+    continue
+    break
+    for ( ... ; ... ; ... )
+    do ... while ()
+    return
+    
+Labels (Label:)
+    An ordinary name starting with an underscore or alphabetical character, terminated with a colon.
+    Indicates a destination for a goto statement.
     
 Global Declarations
     byte i;                         unsigned byte variables (8-bit), may have initial value
@@ -109,14 +122,16 @@ Expressions by Precedence and Evaluation Order
 DeciC65 uses three types of memory: the DeciC stack in zp, the 6502 stack, and
 the heap in high memory.
 
+--- DeciC Stack ---
 The DeciC stack (dstack) is located in zp, and is used to store all local vars,
 including pointers. The dstack stack begins at programmer-assigned low address
 (ex: $00 or $20) and grows upwards as functions are called. Becasue the dstack
 exists in zp, there is a hard limit to the size of the dstack. A programmer may
 further limit the size of the dstack, but this will reduce the number of
-functions that can be called recursively. DeciC can optionally check the bounds
-of the dstack on every function call and exit with and error code if the dstack
-exceeds the limit.
+functions that can be called recursively.
+
+DeciC can optionally check the bounds of the dstack on every function call and
+exit with and error code if the dstack exceeds the limit (stack probe).
 
 The state of the dstack is defined by two variables: dsb (stack base) and dss
 (stack size). Dss is constant for a given function and equals the amount of
@@ -125,9 +140,11 @@ variables. Dss is set by the compiler. Dsb is the current base of the stack.
 Parameters to the function begin at Dsb, local variables begin at Dsb + 
 sizeof(parameters). Dss = sizeof(parameters) + sizeof(local variables).
 
+--- 6502 Stack ---
 The 6502 stack is only used to store the return address and dsb of a calling
 function.
 
+--- DeciC Heap ---
 The DeciC heap is stored in high memory. This is where arrays, strings, and
 global variables are stored.
 
