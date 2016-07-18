@@ -22,8 +22,12 @@
                 exists in a slot, then the slot displays as empty. Overwriting a
  */
 
-const char * GameModeState = &0x0040;
-const char * ReturnGameMode = &0x0300;
+const char* GameModeState = (char*)0x0040;
+const char* ReturnGameMode = (char*)0x0300;
+
+// in main
+asm("ldx #$00"); // set fsb = 0
+asm("jsr MenuMode"); // call MenuMode
 
 void MenuMode() {
     switch (GameModeState) {
