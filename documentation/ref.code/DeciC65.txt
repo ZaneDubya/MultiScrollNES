@@ -1,6 +1,6 @@
 DeciC65 (dc65) is a hypothetical C-like language for the NES/6502. It is called 'deciC' because
-it has only a tenth of the features of full C. It uses a pseudostack in zp to give functions fast
-access to parameters and local values.
+it has nominally only a tenth of the features of full C. It uses a pseudostack in zp to give
+functions fast access to parameters and local values.
 
 === Program Structure ===
 Comments
@@ -19,15 +19,18 @@ Preprocessor directives
     #alias - sets a variable to a constant place in memory.
     
 Expression Statements
+    break
+    case () { case x: ... break; case y: ... break; default: ... break; }
+    const
+    continue
+    do ... while ()
+    for ( ... ; ... ; ... )
     goto
     if () ... [ else ... ]
-    case () { case x: ... break; case y: ... break; default: ... break; }
-    while ()
-    continue
-    break
-    for ( ... ; ... ; ... )
-    do ... while ()
     return
+    static
+    void
+    while ()
     
 Labels (Label:)
     An ordinary name starting with an underscore or alphabetical character, terminated with a colon.
