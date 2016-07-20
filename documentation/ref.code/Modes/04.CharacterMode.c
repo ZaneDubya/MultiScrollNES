@@ -1,3 +1,9 @@
-/*  The player can view statistics, equipment, inventory etc. from this mode.
-    Exciting!
+/*  The player can view information about their characters from this mode.
+    Statistics
+    Inventory
+    ItemDetails
+    Merchant
+    CharBackground
+    SpellBook
+    Haggle
 */
