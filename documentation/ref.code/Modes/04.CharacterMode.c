@@ -2,4 +2,5 @@
     00  StatisticsAndInventory
     01  ItemDetails
     02  CharBackground
+    In full game, will also have merchant/haggle modes.
 */
