@@ -28,9 +28,9 @@
         64  for text and screen borders.
     CHRRAM:SPR - 256 tiles. Holds animated version of current active actor.
         64 - reserved for top portion of overlapping current actors. 4 spots per slot for 16 actors.
-        32 - current active actor.
-        32 - current effects/ selection.
-        128 - unused, I guess. :/
+        32 - current active actor. Loaded on fly.
+        32 - selection sprites. Loaded at runtime.
+        128 - effect sprites. Explosions, text. Loaded on fly.
     Modes:
         00  Initialize - Load data (placing enemies), load chr gfx/nametable, get initiative order.
             -> GetNextTurn
