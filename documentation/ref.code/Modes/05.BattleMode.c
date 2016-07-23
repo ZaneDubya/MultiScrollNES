@@ -20,16 +20,21 @@
                 ActionItem (always)
                 AttemptEscape (if on edge of map)
     Modes:
-        00  Initialize - Load data and chr gfx / nametable, place enemies, get initiative order.
+        00  Initialize - Load data (placing enemies), load chr gfx/nametable, get initiative order.
             -> GetNextTurn
-        01  GetNextTurn - choose next actor based on initiative order
-            -> CheckActive
-        02  CheckActive - determine if currently selected actor gets a turn.
-            - If actor is active -> BeginPlayerTurn or BeginEnemyTurn
-            - If actor is not active -> GetNextTurn
-        03  EndDefeat - shows defeat message.
+        01  GetNextTurn
+            1.  If all players are dead -> EndDefeat
+            2.  If all enemies are dead or have fled -> EndVictory
+            3.  Choose next actor based on initiative order. For each actor in order:
+                    If actor is dead, get next actor.
+                    Tick actor status effects.
+                    If actor is not active due to debuff, get next actor.
+                    Actor is active -> BeginPlayerTurn or BeginEnemyTurn
+        02  EndDefeat - shows defeat message.
             -> Menu mode
-        04  EndVictory - show victory message. Update field data.
+        03  EndVictory - show victory message. Update field data (char stats, dead enemies).
+            -> World mode
+        04  EndFlee - show flee message. Update field data.
             -> World mode
         10  BeginEnemyTurn - show enemy menu. Highlight enemy.
             -> DoEnemyTurn
@@ -62,7 +67,12 @@
         2B  DoPlayerSelectItem
         2C  DoPlayerSelectSpellSkillItemTarget
         2D  BeginPlayerSelectFlee
-        2E  DoPlayerShowFleeResult
+            Check if flee successful.
+                If flee successful -> EndFlee
+                If flee not successful -> ShowFleeNotSuccessful
+        2E  ShowFleeNotSuccessful
+            Pause.
+            A -> GetNextTurn
         30  Do item effect on self
         31  Do item effect on target
         32  Do actor move
