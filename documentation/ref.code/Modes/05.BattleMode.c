@@ -55,7 +55,7 @@
         23  DoPlayerSelectMove - player selects a target from the grid.
             - Possible moves are in light green. Possible attacks are in red. Impossible moves gray/yellow.
             - On select valid move -> DoActorMove
-            - On select valid move -> DoActorMoveAndAttack
+            - On select valid move -> DoActorMove with Queued attack.
             - B -> BeginPlayerTurn
         24  BeginPlayerSelectAttack
         25  DoPlayerSelectAttack
@@ -73,10 +73,16 @@
         2E  ShowFleeNotSuccessful
             Pause.
             A -> GetNextTurn
-        30  Do item effect on self
-        31  Do item effect on target
-        32  Do actor move
-        33  Do actor attack
+        30  DoActorMove (params: dest tile and queued attack)
+            - Get path.
+            - Clear actor feet/head tiles. If head/feet occupied same tile, place opponent sprite for feet.
+            - place sprite for actor in same position.
+            - Move sprite from tile to tile.
+            - If queued attack -> DoActorAttack
+            - Else -> GetNextTurn
+        31  DoActorAttack
+        32  Do item effect on self
+        33  Do item effect on target
         34  Do actor cast spell
         35  Do actor use skill
         36  Do actor use item
