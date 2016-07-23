@@ -1,6 +1,6 @@
 /*  BattleMode - displays the battle grid with a display of statistics and menu options below.
     Battle Grid - top 256x176 (32x22) of the screen.
-        Enemies and allies are placed on a grid: a 12 wide by 8 high grid of 16x16 squares.
+        Enemies and allies are placed on a grid: a 12 wide by 8 high (96 total) grid of 16x16 squares.
         Each actor is 1x1, 1x2, or 2x2 in size; humanoids are 1x2.
         There is additionally 32p on each side and 32p on the top of the screen that are not part of the grid.
         Colors are as follows:
@@ -20,32 +20,58 @@
                 ActionItem (always)
                 AttemptEscape (if on edge of map)
     Modes:
-        00  Loading...
-        01  Get next turn
-        02  End turn
-        03  Begin enemy turn (show menu)
-        04  Enemy turn - do AI
-        05  Begin player turn (calculate options and show menu)
-        06  Waiting for player input - menu
-        07  Calculate player movement range
-        08  Waiting for player input - select move target
-        09  Show spell menu
-        0A  Show skill menu
-        0B  Waiting for player input - select skill/spell
-        0C  Waiting for player input - select skill/spell target
-        0D  Show item menu
-        0E  Waiting for player input - select item
-        0F  Waiting for player input - select item target
-        10  Do item effect on self
-        11  Do item effect on target
-        12  Do actor move
-        13  Do actor attack
-        14  Do actor cast spell
-        15  Do actor use skill
-        16  Do actor use item
-        17  Do actor die
-        18  Do actor get hit
-        19  Do actor buff
-        1A  Do projectile
-        1B  Do player flee
+        00  Initialize - Load data and chr gfx / nametable, place enemies, get initiative order.
+            -> GetNextTurn
+        01  GetNextTurn - choose next actor based on initiative order
+            -> CheckActive
+        02  CheckActive - determine if currently selected actor gets a turn.
+            - If actor is active -> BeginPlayerTurn or BeginEnemyTurn
+            - If actor is not active -> GetNextTurn
+        03  EndDefeat - shows defeat message.
+            -> Menu mode
+        04  EndVictory - show victory message. Update field data.
+            -> World mode
+        10  BeginEnemyTurn - show enemy menu. Highlight enemy.
+            -> DoEnemyTurn
+        11  DoEnemyTurn - do AI. Pause for long enough so that player can follow AI's actions.
+            Depending on AI, DoActor****.
+        20  BeginPlayerTurn - calculate what actions are available. Show menu. Highlight player.
+            - Possible actions are Move, Attack, Spell, Skill, Item, Escape.
+            - Actions not available are greyed out.
+            -> WaitInputMenu
+        21  WaitInputMenu - player can select an option from menu.
+            - Highlight options with dpad left and right.
+            - B shows help message for highlighted action.
+            - A selects option.
+        22  BeginPlayerMove - determine where player can move to.
+            - calculate where player can move based on player speed. Results: 12 byte bitfield.
+            - calculate if enemies are in range of movement. Results: 12 byte bitfield.
+            -> DoPlayerSelectMove
+        23  DoPlayerSelectMove - player selects a target from the grid.
+            - Possible moves are in light green. Possible attacks are in red. Impossible moves gray/yellow.
+            - On select valid move -> DoActorMove
+            - On select valid move -> DoActorMoveAndAttack
+            - B -> BeginPlayerTurn
+        24  BeginPlayerSelectAttack
+        25  DoPlayerSelectAttack
+        26  BeginPlayerSelectSpell
+        27  DoPlayerSelectSpell
+        28  BeginPlayerSelectSkill
+        29  DoPlayerSelectSkill
+        2A  BeginPlayerSelectItem
+        2B  DoPlayerSelectItem
+        2C  DoPlayerSelectSpellSkillItemTarget
+        2D  BeginPlayerSelectFlee
+        2E  DoPlayerShowFleeResult
+        30  Do item effect on self
+        31  Do item effect on target
+        32  Do actor move
+        33  Do actor attack
+        34  Do actor cast spell
+        35  Do actor use skill
+        36  Do actor use item
+        37  Do actor die
+        38  Do actor get hit
+        39  Do actor buff
+        3A  Do projectile
 */
