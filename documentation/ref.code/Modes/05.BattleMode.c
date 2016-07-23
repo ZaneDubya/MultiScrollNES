@@ -19,6 +19,18 @@
                 ActionSkill (if has skills)
                 ActionItem (always)
                 AttemptEscape (if on edge of map)
+    CHRRAM:BG - 256 tiles. Holds still versions of all enemies/players on screen.
+        128 for actors: 4 tiles per 1x1 actor, 8 per 1x2, 16 per 2x2.
+            We reserve 8 spots per slot for 16 actors. A 2x2 actor takes 2 slots.
+            In reality, we'll never have 16 actors, so this is fairly safe.
+        16  for the menu portrait.
+        48  for the action buttons.
+        64  for text and screen borders.
+    CHRRAM:SPR - 256 tiles. Holds animated version of current active actor.
+        64 - reserved for top portion of overlapping current actors. 4 spots per slot for 16 actors.
+        32 - current active actor.
+        32 - current effects/ selection.
+        128 - unused, I guess. :/
     Modes:
         00  Initialize - Load data (placing enemies), load chr gfx/nametable, get initiative order.
             -> GetNextTurn
