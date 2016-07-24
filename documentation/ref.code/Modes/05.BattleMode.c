@@ -51,7 +51,7 @@
         10  BeginEnemyTurn - show enemy menu. Highlight enemy.
             -> DoEnemyTurn
         11  DoEnemyTurn - do AI. Pause for long enough so that player can follow AI's actions.
-            Depending on AI, DoActor****.
+            Depending on AI, DoActor[Action].
         20  BeginPlayerTurn - calculate what actions are available. Show menu. Highlight player.
             - Possible actions are Move, Attack, Spell, Skill, Item, Escape.
             - Actions not available are greyed out.
