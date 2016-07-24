@@ -5,7 +5,7 @@
     00  Walking around!
         DPad    Movement
         A       Do something
-        B       Examine something.
+        Select  Examine something.
         Start   Display start menu
     01  Displaying the START/PAUSE menu at the bottom of the screen:
         Select character (0, 1, 2), Map, Spells, Rest, Menu
@@ -14,5 +14,5 @@
         Affirm selection with A.
         Dismiss START menu with START or B.
     02  Displaying text at the bottom of the screen. 
-        After A or B is pressed, the game will return to the world or enter another mode.
+        A/B - advance text page or goto next mode/return to world.
 */
