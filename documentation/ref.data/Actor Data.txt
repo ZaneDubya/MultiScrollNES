@@ -17,6 +17,9 @@ Last updated 07/09/14
 Actor definitions, placement in the world, and scripting are handled with the 
 eightbit utility. An actor has scripts for interaction, drawing, combat, etc.
 
+There are separate definitions for actors 'in field' and actors 'in battle'.
+The two have no direct relation.
+
 ------------------------[ 1.A. Actor Type Definitions ]-------------------------
 Object data definition, 8b each (32 per 256b)
     1b Sprite data
