@@ -4,8 +4,8 @@
         Each actor is 1x1, 1x2, or 2x2 in size; humanoids are 1x2.
         There is additionally 32p on each side and 32p on the top of the screen that are not part of the grid.
         Colors are as follows:
-            bg: 2 palettes for heroes, 2 for enemies, but bottom tile must share a common palette.
-            sp: 2 palettes for h/e common palette, 2 pal for selection/special effects.
+            bg: 2 for heroes, 2 for enemies, but bottom tile must share a common palette.
+            sp: 2 for h/e common palette, 2 for selection/special effects.
     Menu - bottom 256x64 (32x8) of the screen.
         Top, bottom, left, right 8 pixels are blank. Furthermore, left and right sides are padded 8px.
         When an enemy turn is in progress, the menu is blank.

@@ -15,7 +15,7 @@ Preprocessor directives
     #dw
     #asm
     #endasm
-    #define - sets a value as constant
+    #define - replaces name with value.
     #alias - sets a variable to a constant place in memory.
     
 Expression Statements
@@ -37,9 +37,9 @@ Labels (Label:)
     Indicates a destination for a goto statement.
     
 Global Declarations
-    char i;                         unsigned char variables (8-bit), may have initial value
-    short i;                        unsigned short variables (16-bit), may have initial value
-    const char i = 1;               constants of unsigned chars or shorts
+    char i [= 1];                   unsigned char variables (8-bit), may have initial value
+    short i [= 1];                  unsigned short variables (16-bit), may have initial value
+    const char i = 1;               constants of unsigned chars or shorts, requires initial value
     char[] i or short[] i;          arrays of unsigned chars or shorts
     char* i or short* i;            pointers to unsigned chars or shorts
     f(...)                          functions
