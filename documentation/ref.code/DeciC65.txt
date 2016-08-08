@@ -36,7 +36,7 @@ Labels (Label:)
     An ordinary name starting with an underscore or alphabetical character, terminated with a colon.
     Indicates a destination for a goto statement.
     
-Global Declarations
+Declarations
     char i [= 1];                   unsigned char variables (8-bit), may have initial value
     short i [= 1];                  unsigned short variables (16-bit), may have initial value
     const char i = 1;               constants of unsigned chars or shorts, requires initial value
@@ -51,8 +51,9 @@ Other tokens
     
 Scope
     Variables are scoped within the block in which they are declared.
-    Variables declared outside of any brackets has global scope.
+    Variables declared outside of any brackets have global scope.
     Variables with same name as global variable or superior block temporarily supersede higher level vars.
+    
     
 Variables
     Shorts are 16-bit unsigned quantities. When two shorts or a short and a char are combined, the

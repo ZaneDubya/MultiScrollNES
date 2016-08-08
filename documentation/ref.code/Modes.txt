@@ -79,20 +79,21 @@ Menu        Start
             Config
             Load
             Save
-Cutscene    
-Map         
-World       Scripting
+Cutscene             
+Field       Scripting
             QuickText
             Display map
             Walking
             Blocking
             Actors
-Battle      
-Chest       
-Camping     
 Character   Stats       
             Inventory   
             ItemDetails 
             Merchant    
             SpellBook
-MiniGames
+Battle      
+Map
+Rest
+Puzzle       
+SpellBook
+Temple     

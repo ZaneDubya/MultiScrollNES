@@ -3,23 +3,30 @@
     ReturnGameMode , which MUST be set before MenuMode starts. If ReturnGameMode
     is $00, then Begin will show. If ReturnGameMode is anything else, then
     Continue will show.
-    
+
+    Modes by function:
     Begin:      Loaded after Reset mode (ReturnGameMode is $00). Player can Start a game,
                 Load a game, access the Configuration screen, and play the Credits.
-                Start -> NewGameMode (sets up world and show first chapter cutscene).
+                Start -> NewGame (sets up world and show first chapter cutscene).
                 Load -> RetoreMenu
                 Save -> SaveMenu
+                Config -> ConfigMenu
+                Credits -> PlayCredits
                 
     Continue:   The pause menu. Loaded from World during play. Player can Continue
                 the current game, Start a new a game, Load a game, Save the current game,
                 access the Configuration screen, and play the Credits.
-    Restore:    Displays the three savegame slots that can be restored from. If no game
+    RetoreMenu: Displays the three savegame slots that can be restored from. If no game
                 data exists in a slot, then the slot displays as empty, and cannot be
-                restored from. A fourth option "Cancel" returns to the previous screen.
+                restored from. A fourth option "Back" returns to the previous screen.
                 If ReturnGameMode != $00, then prior to loading, a "Are you sure? Y/N"
                 dialog displays.
-    Save:       Displays the three savegame slots that can be saved to. If no game data
-                exists in a slot, then the slot displays as empty. Overwriting a
+    SaveMenu:   Displays the three savegame slots that can be saved to. Similar to 
+                RestoreMenu. If no game data exists in a slot, then the slot displays
+                as empty. Overwriting a game displays the "Are you sure? Y/N" prompt.
+    Config:     Displays the Configuration menu. Not included in demo.
+    Credits:    Sets up the game to display the credits.
+    
  */
 
 const char* GameModeState = (char*)0x0040;

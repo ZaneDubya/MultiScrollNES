@@ -4,8 +4,7 @@
     States
     00  Walking around!
         DPad    Movement
-        A       Do something
-        Select  Examine something.
+        A       Do/examine something.
         Start   Display start menu
     01  Displaying the START/PAUSE menu at the bottom of the screen:
         Select character (0, 1, 2), Map, Spells, Rest, Menu

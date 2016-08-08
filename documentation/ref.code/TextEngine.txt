@@ -1,4 +1,4 @@
-Text Engine
+Text Engine - displays text using a byte pair compression table. Only about 52 chars (88 if extended ascii).
 
 Notes:
 Max string length is 0xff
